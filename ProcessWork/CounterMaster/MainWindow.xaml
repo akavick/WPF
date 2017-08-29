@@ -1,0 +1,34 @@
+﻿<Window x:Class="CounterMaster.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <DockPanel>
+        <Grid
+            DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="_butNew"
+                Content="New" />
+            <Button
+                Grid.Column = "1"
+                x:Name="_butKill"
+                Content="Kill" />
+            <Button
+                Grid.Column = "2"
+                x:Name="_butPlus"
+                Content="+" />
+            <Button
+                Grid.Column = "3"
+                x:Name="_butMinus"
+                Content="-" />
+        </Grid>
+        <DataGrid 
+            x:Name="_dataGrid"
+            IsReadOnly="True"/>
+    </DockPanel>
+</Window>

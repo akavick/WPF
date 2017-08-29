@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CounterMaster", "CounterMaster\CounterMaster.csproj", "{603F7548-AA34-4C5B-A621-A52FD6B5DDDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Counter", "Counter\Counter.csproj", "{0D94505C-4D76-4FFD-B838-D4C04CC965A5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{603F7548-AA34-4C5B-A621-A52FD6B5DDDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{603F7548-AA34-4C5B-A621-A52FD6B5DDDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{603F7548-AA34-4C5B-A621-A52FD6B5DDDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{603F7548-AA34-4C5B-A621-A52FD6B5DDDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D94505C-4D76-4FFD-B838-D4C04CC965A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D94505C-4D76-4FFD-B838-D4C04CC965A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D94505C-4D76-4FFD-B838-D4C04CC965A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D94505C-4D76-4FFD-B838-D4C04CC965A5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
