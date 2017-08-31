@@ -24,6 +24,7 @@ namespace TestWpfApp
         {
             InitializeComponent();
             _but.Click += _but_Click;
+            Closed += (s, e) => Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
         }
 
 
@@ -37,51 +38,37 @@ namespace TestWpfApp
         //    HideBusy();
         //}
 
-        //private readonly object _busyWindowSync = new object();
-
         //private void ShowBusy()
         //{
-        //    lock (_busyWindowSync)
+        //    if (_busyWindow != null)
+        //        return;
+
+        //    var p = new Point { X = Left + Width / 2, Y = Top + Height / 2 };
+
+        //    var newWindowThread = new Thread(() =>
         //    {
-        //        if (_busyWindow != null)
-        //            return;
-
-        //        var p = new Point { X = Left + Width / 2, Y = Top + Height / 2 };
-
-        //        var newWindowThread = new Thread(() =>
+        //        _busyWindow = new BusyWindow
         //        {
-        //            lock (_busyWindowSync)
-        //            {
-        //                if (_busyWindow == null)
-        //                {
-        //                    _busyWindow = new BusyWindow
-        //                    {
-        //                        Left = p.X,
-        //                        Top = p.Y
-        //                    };
-        //                    _busyWindow.Show();
-        //                }
-        //            }
+        //            Left = p.X,
+        //            Top = p.Y
+        //        };
+        //        _busyWindow.Show();
 
-        //            Dispatcher.Run();
-        //        })
-        //        { IsBackground = true };
+        //        Dispatcher.Run();
+        //    })
+        //    { IsBackground = true };
 
-        //        newWindowThread.SetApartmentState(ApartmentState.STA);
-        //        newWindowThread.Start();
-        //    }
+        //    newWindowThread.SetApartmentState(ApartmentState.STA);
+        //    newWindowThread.Start();
         //}
 
         //private void HideBusy()
         //{
-        //    lock (_busyWindowSync)
+        //    _busyWindow?.Dispatcher.BeginInvoke((Action)(() =>
         //    {
-        //        _busyWindow?.Dispatcher.BeginInvoke((Action)(() =>
-        //        {
-        //            _busyWindow.Close();
-        //            _busyWindow = null;
-        //        }));
-        //    }
+        //        _busyWindow.Close();
+        //        _busyWindow = null;
+        //    }));
         //}
 
         #endregion
@@ -93,16 +80,26 @@ namespace TestWpfApp
 
         private async void _but_Click(object sender, RoutedEventArgs e)
         {
-            ShowBusy();
-            await Task.Delay(3000);
-            HideBusy();
+            await ShowBusy();
+            var awaiter = Dispatcher.InvokeAsync(() =>
+            {
+                for (var i = 0; i < 1000000000; i += 2)
+                    i--;
+            });
+            awaiter.Completed += (s, ea) =>
+            {
+                HideBusy();
+            };
+
+
         }
 
-        private void ShowBusy()
-        {
-            var p = new Point { X = Left + Width / 2, Y = Top + Height / 2 };
 
-            Hide();
+
+        private async Task ShowBusy()
+        {
+
+            var p = new Point { X = Left + Width / 2, Y = Top + Height / 2 };
 
             _busyWindow = new BusyWindow
             {
@@ -110,14 +107,24 @@ namespace TestWpfApp
                 Top = p.Y
             };
 
+            //SynchronizationContext.SetSynchronizationContext(
+            //    new DispatcherSynchronizationContext(
+            //        Dispatcher.CurrentDispatcher));
+
+            //_busyWindow.Closed += (s, e) =>
+            //{
+            //    _busyWindow.Dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+            //};
+
             _busyWindow.Show();
+            Dispatcher.Run();
+
         }
 
         private void HideBusy()
         {
             _busyWindow.Close();
             _busyWindow = null;
-            Show();
         }
 
         #endregion
