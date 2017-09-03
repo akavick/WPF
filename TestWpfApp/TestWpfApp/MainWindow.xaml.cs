@@ -78,47 +78,52 @@ namespace TestWpfApp
 
         #region MyRealization
 
-        private /*async */void _but_Click(object sender, RoutedEventArgs e)
+        private async void _but_Click(object sender, RoutedEventArgs e)
         {
-            var sc = SynchronizationContext.Current;
-            var num = int.Parse(_text.Text) + 1;
+            //var sc = SynchronizationContext.Current;
+            //var num = int.Parse(_text.Text) + 1;
 
-            Task.Run(() =>
-            {
-                sc?.Post(x =>
-                {
-                    _but.Content = !bool.Parse(_but.Content.ToString());
-                    _text.Text = x.ToString();
-                }, num);
-            });
-
-
-            //await ShowBusy();
-            //var awaiter = Dispatcher.InvokeAsync(() =>
+            //Task.Run(() =>
             //{
-            //    for (var i = 0; i < 1000000000; i += 2)
-            //        i--;
+            //    sc?.Post(x =>
+            //    {
+            //        _but.Content = !bool.Parse(_but.Content.ToString());
+            //        _text.Text = x.ToString();
+            //    }, num);
             //});
-            //awaiter.Completed += (s, ea) =>
-            //{
-            //    HideBusy();
-            //};
 
+            //Application.Current.Dispatcher.UnhandledException;
 
+            await ShowBusy();
+            Thread.Sleep(2000);
+            HideBusy();
         }
 
 
 
         private async Task ShowBusy()
         {
-
             var p = new Point { X = Left + Width / 2, Y = Top + Height / 2 };
+            var tcs = new TaskCompletionSource<object>();
 
-            _busyWindow = new BusyWindow
+            Task.Run(async () =>
             {
-                Left = p.X,
-                Top = p.Y
-            };
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    _busyWindow = new BusyWindow
+                    {
+                        Left = p.X,
+                        Top = p.Y
+                    };
+                    _busyWindow.Show();
+                });
+
+                tcs.SetResult(null);
+            });
+
+            await tcs.Task;
+
+            //Dispatcher.Run();
 
             //SynchronizationContext.SetSynchronizationContext(
             //    new DispatcherSynchronizationContext(
@@ -128,10 +133,6 @@ namespace TestWpfApp
             //{
             //    _busyWindow.Dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
             //};
-
-            _busyWindow.Show();
-            Dispatcher.Run();
-
         }
 
         private void HideBusy()
