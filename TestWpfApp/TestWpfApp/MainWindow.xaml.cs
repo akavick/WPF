@@ -78,18 +78,31 @@ namespace TestWpfApp
 
         #region MyRealization
 
-        private async void _but_Click(object sender, RoutedEventArgs e)
+        private /*async */void _but_Click(object sender, RoutedEventArgs e)
         {
-            await ShowBusy();
-            var awaiter = Dispatcher.InvokeAsync(() =>
+            var sc = SynchronizationContext.Current;
+            var num = int.Parse(_text.Text) + 1;
+
+            Task.Run(() =>
             {
-                for (var i = 0; i < 1000000000; i += 2)
-                    i--;
+                sc?.Post(x =>
+                {
+                    _but.Content = !bool.Parse(_but.Content.ToString());
+                    _text.Text = x.ToString();
+                }, num);
             });
-            awaiter.Completed += (s, ea) =>
-            {
-                HideBusy();
-            };
+
+
+            //await ShowBusy();
+            //var awaiter = Dispatcher.InvokeAsync(() =>
+            //{
+            //    for (var i = 0; i < 1000000000; i += 2)
+            //        i--;
+            //});
+            //awaiter.Completed += (s, ea) =>
+            //{
+            //    HideBusy();
+            //};
 
 
         }
