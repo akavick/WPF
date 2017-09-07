@@ -1,0 +1,41 @@
+﻿<UserControl
+    x:Class="ChessHorseWalk.ChessField"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ChessHorseWalk"
+    mc:Ignorable="d"
+    d:DesignHeight="601"
+    d:DesignWidth="601"
+    BorderBrush="Black"
+    BorderThickness="1">
+
+    <UserControl.Resources>
+        <SolidColorBrush
+            x:Key="_disabledForegroundBrush"
+            Color="Red" />
+        <SolidColorBrush
+            x:Key="_disabledBackgroundBrush"
+            Color="White" />
+        <Style
+            TargetType="{x:Type Button}">
+            <Style.Triggers>
+                <Trigger
+                    Property="IsEnabled"
+                    Value="False">
+                    <Setter
+                        Property="Foreground"
+                        Value="{DynamicResource _disabledForegroundBrush}" />
+                    <Setter
+                        Property="Background"
+                        Value="{DynamicResource _disabledBackgroundBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid
+        x:Name="_field">
+    </Grid>
+</UserControl>
