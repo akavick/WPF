@@ -32,13 +32,18 @@ namespace ChessHorseWalk
 
         public void Clear()
         {
-            _current.Content = null;
-            _current.Foreground = Brushes.Black;
-            _current = null;
+            if (_current != null)
+            {
+                _current.Content = null;
+                _current.Foreground = Brushes.Black;
+                _current = null;
+            }
             foreach (var cell in _cells)
             {
                 cell.IsEnabled = true;
                 cell.Content = null;
+                cell.BorderBrush = Brushes.Black;
+                cell.Opacity = 1.0;
             }
         }
 
@@ -61,18 +66,7 @@ namespace ChessHorseWalk
                 var isWhite = i % 2 == 0;
                 for (var j = 0;j < Side;j++)
                 {
-                    var cell = new Label
-                    {
-                        FontSize = 50,
-                        BorderBrush = Brushes.Black,
-                        BorderThickness = new Thickness(2),
-                        Background = isWhite ? Brushes.White : Brushes.Gray,
-                        ClipToBounds = true,
-                        HorizontalContentAlignment = HorizontalAlignment.Center,
-                        VerticalContentAlignment = VerticalAlignment.Center,
-                        Padding = new Thickness(0),
-                        Margin = new Thickness(0)
-                    };
+                    var cell = CreateLabel(isWhite);
                     _cells[i, j] = cell;
                     cell.SetValue(Grid.ColumnProperty, j);
                     cell.SetValue(Grid.RowProperty, i);
@@ -97,6 +91,25 @@ namespace ChessHorseWalk
         }
 
 
+        private Label CreateLabel(bool isWhite)
+        {
+            var cell = new Label
+            {
+                FontSize = 40,
+                FontWeight = FontWeights.Bold,
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(2),
+                Background = isWhite ? Brushes.White : Brushes.Gray,
+                ClipToBounds = true,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0)
+            };
+            return cell;
+        }
+
+
         private void HandlePosition(int i, int j)
         {
             var possiblePositions = new[]
@@ -117,6 +130,7 @@ namespace ChessHorseWalk
             {
                 cell.IsEnabled = false;
                 cell.BorderBrush = Brushes.Black;
+                cell.Opacity = 0.8;
             }
 
             foreach (var pp in possiblePositions)
@@ -124,9 +138,11 @@ namespace ChessHorseWalk
                 var cell = _cells[pp.y, pp.x];
                 cell.IsEnabled = true;
                 cell.BorderBrush = Brushes.LimeGreen;
+                cell.Opacity = 1.0;
             }
 
             _current.BorderBrush = Brushes.Red;
+            _current.Opacity = 1.0;
         }
 
     }
