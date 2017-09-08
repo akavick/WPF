@@ -11,7 +11,7 @@
     BorderBrush="Black"
     BorderThickness="1">
 
-    <UserControl.Resources>
+    <!--<UserControl.Resources>
         <SolidColorBrush
             x:Key="_disabledForegroundBrush"
             Color="Red" />
@@ -33,7 +33,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-    </UserControl.Resources>
+    </UserControl.Resources>-->
     
     <Grid
         x:Name="_field">

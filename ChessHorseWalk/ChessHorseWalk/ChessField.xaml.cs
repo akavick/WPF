@@ -18,14 +18,14 @@ namespace ChessHorseWalk
     public partial class ChessField
     {
         private const int Side = 8;
-        private Button _current = null;
-        private readonly Button[,] _cells = null;
+        private Label _current = null;
+        private readonly Label[,] _cells = null;
 
 
         public ChessField()
         {
             InitializeComponent();
-            _cells = new Button[Side, Side];
+            _cells = new Label[Side, Side];
             FillField();
         }
 
@@ -35,10 +35,10 @@ namespace ChessHorseWalk
             _current.Content = null;
             _current.Foreground = Brushes.Black;
             _current = null;
-            foreach (var b in _cells)
+            foreach (var cell in _cells)
             {
-                b.IsEnabled = true;
-                b.Content = null;
+                cell.IsEnabled = true;
+                cell.Content = null;
             }
         }
 
@@ -61,27 +61,36 @@ namespace ChessHorseWalk
                 var isWhite = i % 2 == 0;
                 for (var j = 0;j < Side;j++)
                 {
-                    var b = new Button
+                    var cell = new Label
                     {
                         FontSize = 50,
                         BorderBrush = Brushes.Black,
-                        Background = isWhite ? Brushes.White : Brushes.Gray
+                        BorderThickness = new Thickness(2),
+                        Background = isWhite ? Brushes.White : Brushes.Gray,
+                        ClipToBounds = true,
+                        HorizontalContentAlignment = HorizontalAlignment.Center,
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        Padding = new Thickness(0),
+                        Margin = new Thickness(0)
                     };
-                    _cells[i, j] = b;
-                    b.SetValue(Grid.ColumnProperty, j);
-                    b.SetValue(Grid.RowProperty, i);
+                    _cells[i, j] = cell;
+                    cell.SetValue(Grid.ColumnProperty, j);
+                    cell.SetValue(Grid.RowProperty, i);
                     var y = i;
                     var x = j;
-                    b.Click += (s, e) =>
+
+                    void OnCellOnMouseUp(object s, MouseButtonEventArgs e)
                     {
-                        b.Content = (int?)b.Content + 1 ?? 1;
-                        b.Foreground = Brushes.Red;
+                        cell.Content = (int?) cell.Content + 1 ?? 1;
+                        cell.Foreground = Brushes.Red;
                         if (_current != null)
                             _current.Foreground = Brushes.Black;
-                        _current = b;
+                        _current = cell;
                         HandlePosition(y, x);
-                    };
-                    _field.Children.Add(b);
+                    }
+
+                    cell.MouseUp += OnCellOnMouseUp;
+                    _field.Children.Add(cell);
                     isWhite = !isWhite;
                 }
             }
@@ -104,10 +113,20 @@ namespace ChessHorseWalk
             .Where(pp => pp.x > -1 && pp.x < Side && pp.y > -1 && pp.y < Side)
             .ToArray();
 
-            foreach (var button in _cells)
-                button.IsEnabled = false;
+            foreach (var cell in _cells)
+            {
+                cell.IsEnabled = false;
+                cell.BorderBrush = Brushes.Black;
+            }
+
             foreach (var pp in possiblePositions)
-                _cells[pp.y, pp.x].IsEnabled = true;
+            {
+                var cell = _cells[pp.y, pp.x];
+                cell.IsEnabled = true;
+                cell.BorderBrush = Brushes.LimeGreen;
+            }
+
+            _current.BorderBrush = Brushes.Red;
         }
 
     }
