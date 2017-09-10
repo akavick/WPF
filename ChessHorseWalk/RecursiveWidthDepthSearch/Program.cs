@@ -1,63 +1,103 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RecursiveWidthDepthSearch
 {
-
-
-
     class Program
     {
-        private static void Main() => new Program().Run2();
-
-        private const int Side = 8;
-
-        private void Run2()
+        private static void Main()
         {
-            var cells = new bool[Side, Side];
-            var history = new Stack<(int y, int x)>();
-            var startPoint = (3, 5);
-
-            void PathFind((int y, int x) point)
+            try
             {
-                cells[point.y, point.x] = true;
-                history.Push(point);
+                new Program().Run().GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
 
-                if (history.Count == cells.Length)
-                    return;
 
-                var possiblePositions = new[]
+        private async Task Run()
+        {
+            const int side = 8;
+            var found = false;
+            var locker = new object();
+            var rand = new Random();
+            var range = Enumerable.Range(0, side).ToArray();
+
+            var tasks = range
+                .SelectMany(i => range.Select(j => (i, j)))
+                .OrderBy(t => rand.Next())
+                .Take(Environment.ProcessorCount)
+                .Select(async p => await Task.Run(() =>
                 {
-                    (y:point.y - 2, x:point.x - 1),
-                    (y:point.y - 2, x:point.x + 1),
-                    (y:point.y - 1, x:point.x + 2),
-                    (y:point.y + 1, x:point.x + 2),
-                    (y:point.y + 2, x:point.x + 1),
-                    (y:point.y + 2, x:point.x - 1),
-                    (y:point.y + 1, x:point.x - 2),
-                    (y:point.y - 1, x:point.x - 2)
-                }
-                .Where(pp => pp.x > -1 && pp.x < Side && pp.y > -1 && pp.y < Side && !cells[pp.y, pp.x])
-                .ToArray();
+                    Console.WriteLine($"{p} {Task.CurrentId} {Thread.CurrentThread.ManagedThreadId} started{Environment.NewLine}");
 
-                foreach (var pp in possiblePositions)
-                    PathFind(pp);
+                    var cells = new bool[side, side];
+                    var history = new Stack<(int y, int x)>();
+                    var pathFound = false;
 
-                if (history.Count == cells.Length)
-                    return;
+                    void PathFind((int y, int x) point)
+                    {
+                        if (found)
+                            return;
 
-                cells[point.y, point.x] = false;
-                history.Pop();
-            }
+                        cells[point.y, point.x] = true;
+                        history.Push(point);
 
-            PathFind(startPoint);
+                        var possiblePositions = new[]
+                        {
+                            (y:point.y - 2, x:point.x - 1),
+                            (y:point.y - 2, x:point.x + 1),
+                            (y:point.y - 1, x:point.x + 2),
+                            (y:point.y + 1, x:point.x + 2),
+                            (y:point.y + 2, x:point.x + 1),
+                            (y:point.y + 2, x:point.x - 1),
+                            (y:point.y + 1, x:point.x - 2),
+                            (y:point.y - 1, x:point.x - 2)
+                        }
+                        .Where(pp => pp.x > -1 && pp.x < side && pp.y > -1 && pp.y < side && !cells[pp.y, pp.x])
+                        .ToArray();
 
-            if(history.Count == 0)
-                Console.WriteLine("Path not found");
+                        foreach (var pp in possiblePositions)
+                            PathFind(pp);
 
-            foreach (var point in history.Reverse())
-                Console.WriteLine(point);
+                        if (history.Count == cells.Length)
+                        {
+                            lock (locker)
+                                if (!found)
+                                    pathFound = found = true;
+                            return;
+                        }
+
+                        cells[point.y, point.x] = false;
+                        history.Pop();
+                    }
+
+                    PathFind(p);
+
+                    Console.WriteLine($"{p} {Task.CurrentId} {Thread.CurrentThread.ManagedThreadId} finished{Environment.NewLine}");
+
+                    if (!pathFound)
+                        return;
+
+                    lock (locker)
+                    {
+                        foreach (var point in history.Reverse())
+                            Console.WriteLine(point);
+                        Console.WriteLine();
+                    }
+                }))
+                .ToList();
+
+            await Task.WhenAll(tasks);
+
+            if (!found)
+                Console.WriteLine("Path not Found");
         }
 
 
@@ -68,39 +108,6 @@ namespace RecursiveWidthDepthSearch
 
 
 
-
-
-        class Cell
-        {
-            public readonly int Y;
-            public readonly int X;
-            public int Steps = 0;
-
-            public Cell(int y, int x)
-            {
-                X = x;
-                Y = y;
-            }
-        }
-
-        private void Run1()
-        {
-            var board = new Cell[Side, Side];
-            var history = new Stack<Cell>();
-
-            for (var y = 0;y < Side;y++)
-            {
-                for (var x = 0;x < Side;x++)
-                {
-                    board[y, x] = new Cell(y, x);
-                }
-            }
-
-            var current = board[0, 0];
-
-
-
-        }
 
     }
 }
