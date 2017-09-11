@@ -1,12 +1,73 @@
-﻿<Window x:Class="TickTackToe3D.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TickTackToe3D"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid x:Name="_mainGrid">
+﻿<Window
+    x:Class="TickTackToe3D.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:TickTackToe3D"
+    mc:Ignorable="d"
+    Title="MainWindow"
+    Height="350"
+    Width="525">
+
+    <Grid
+        x:Name="_mainGrid"
+        Background="{x:Null}">
+
+
+        <Button
+            x:Name="_button"
+            Background="Red"
+            Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Height}"
+            Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Grid}}, Path=ActualHeight}"
+            BorderThickness="0"
+            Padding="0">
+            <Button.Content>
+
+                <!--<Ellipse
+                    Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Button}}, Path=Width}"
+                    Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Button}}, Path=Height}"
+                    Fill="#ffffff" Opacity="0.5" />-->
+
+                <Grid
+                    ClipToBounds="True"
+                    Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Button}}, Path=Width}"
+                    Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Button}}, Path=Height}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition
+                            Width="1*" />
+                        <ColumnDefinition
+                            Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition
+                            Height="1*" />
+                        <RowDefinition
+                            Height="1*" />
+                    </Grid.RowDefinitions>
+                    <Ellipse
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Fill="Black"
+                        Opacity="0.25" />
+                    <Ellipse
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        Fill="Black"
+                        Opacity="0.5" />
+                    <Ellipse
+                        Grid.Column="0"
+                        Grid.Row="1"
+                        Fill="Black"
+                        Opacity="0.75" />
+                    <Ellipse
+                        Grid.Column="1"
+                        Grid.Row="1"
+                        Fill="Black" />
+                </Grid>
+            </Button.Content>
+
+        </Button>
 
     </Grid>
 
