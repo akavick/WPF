@@ -37,8 +37,8 @@
         <Button
             x:Name="_button"
             Background="Red"
-            Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Height}"
-            Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Grid}}, Path=ActualHeight}"
+            Width="{Binding ElementName=_button, Path=Height}"
+            Height="{Binding ElementName=_mainGrid, Path=ActualHeight}"
             BorderThickness="0"
             Padding="0">
             <Button.Content>
@@ -50,39 +50,58 @@
 
                 <Grid
                     ClipToBounds="True"
-                    Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Button}}, Path=Width}"
-                    Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Button}}, Path=Height}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition
-                            Width="1*" />
-                        <ColumnDefinition
-                            Width="1*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition
-                            Height="1*" />
-                        <RowDefinition
-                            Height="1*" />
-                    </Grid.RowDefinitions>
+                    Width="{Binding ElementName=_button, Path=Width}"
+                    Height="{Binding ElementName=_button, Path=Height}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition
+                                Width="1*" />
+                            <ColumnDefinition
+                                Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition
+                                Height="1*" />
+                            <RowDefinition
+                                Height="1*" />
+                        </Grid.RowDefinitions>
+                        <Ellipse
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Fill="Black"
+                            Opacity="0.25" />
+                        <Ellipse
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            Fill="Black"
+                            Opacity="0.45" />
+                        <Ellipse
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Fill="Black"
+                            Opacity="0.65" />
+                        <Ellipse
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            Fill="Black"
+                            Opacity="0.85"/>
+                    </Grid>
                     <Ellipse
-                        Grid.Column="0"
-                        Grid.Row="0"
                         Fill="Black"
-                        Opacity="0.25" />
-                    <Ellipse
-                        Grid.Column="1"
-                        Grid.Row="0"
-                        Fill="Black"
-                        Opacity="0.5" />
-                    <Ellipse
-                        Grid.Column="0"
-                        Grid.Row="1"
-                        Fill="Black"
-                        Opacity="0.75" />
-                    <Ellipse
-                        Grid.Column="1"
-                        Grid.Row="1"
-                        Fill="Black" />
+                        Width="{Binding ElementName=_button, Path=ActualWidth}"/>
+
+                    <StackPanel>
+                        <Label
+                            Target="{x:Reference _box}"
+                            Content="Enter _text:" />
+                        <!--
+                        <Label Target="{Binding ElementName=_box}" Content="Enter _text:"/>
+                        <Label Target="_box" Content="Enter _text:"/>
+                        -->                        
+                        <TextBox
+                            Name="_box" />
+                    </StackPanel>
+
                 </Grid>
             </Button.Content>
 
