@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,23 @@ namespace TickTackToe3D
         public MainWindow()
         {
             InitializeComponent();
+
+            SizeChanged += (s, e) =>
+            {
+                if (e.HeightChanged)
+                {
+                    Width = ActualHeight;
+                }
+                else if (e.WidthChanged)
+                {
+                    Height = ActualWidth;
+                }
+
+                //if (ActualHeight > ActualWidth)
+                //    Width = ActualHeight;
+                //else if (ActualWidth > ActualHeight)
+                //    Height = ActualWidth;
+            };
 
         }
 
@@ -98,9 +116,78 @@ namespace TickTackToe3D
              
              */
 
+
+            /*
+             
+                <ListBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                    <ListBoxItem Content="Item 1"/>
+                    <ListBoxItem Content="Item 2"/>
+                </ListBox>          
+             
+             */
+
+
             var listbox = new ListBox();
             listbox.Items.Add(new ListBoxItem { Content = "Item 1" });
             listbox.Items.Add(new ListBoxItem { Content = "Item 2" });
+        }
+
+
+
+        private void Method003()
+        {
+            /*
+             
+            	<ResourceDictionary>
+		            <Color
+			            x:Key="1"
+			            A="255"
+			            R="255"
+			            G="255"
+			            B="255" />
+		            <Color
+			            x:Key="2"
+			            A="0"
+			            R="0"
+			            G="0"
+			            B="0" />
+	            </ResourceDictionary> 
+
+             */
+
+            ResourceDictionary d = new ResourceDictionary();
+            d.Add("1", new Color
+            {
+                A = 255,
+                R = 255,
+                G = 255,
+                B = 255
+            });
+            d.Add("2", new Color
+            {
+                A = 0,
+                R = 0,
+                G = 0,
+                B = 0
+            });
+        }
+
+
+
+        private void Method004()
+        {
+            /*
+
+                <collections:Hashtable
+                    xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <sys:Int32 x:Key="key1">7</sys:Int32>
+                    <sys:Int32 x:Key="key2">23</sys:Int32>
+                </collections:Hashtable>
+             
+             */
+            var h = new Hashtable {{"key1", 7}, {"key2", 23}};
         }
 
     }
