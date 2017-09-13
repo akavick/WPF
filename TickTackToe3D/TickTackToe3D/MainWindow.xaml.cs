@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xaml;
+using System.Xml;
 
 namespace TickTackToe3D
 {
@@ -22,6 +25,11 @@ namespace TickTackToe3D
         public MainWindow()
         {
             InitializeComponent();
+
+
+            //System.Uri uri = new System.Uri("/WpfApplication1;component/MainWindow.xaml", System.UriKind.Relative);
+            //Window window = (Window)Application.LoadComponent(uri);
+
 
             SizeChanged += (s, e) =>
             {
@@ -155,7 +163,7 @@ namespace TickTackToe3D
 
              */
 
-            ResourceDictionary d = new ResourceDictionary();
+            var d = new ResourceDictionary();
             d.Add("1", new Color
             {
                 A = 255,
@@ -187,8 +195,112 @@ namespace TickTackToe3D
                 </collections:Hashtable>
              
              */
-            var h = new Hashtable {{"key1", 7}, {"key2", 23}};
+            var h = new Hashtable { { "key1", 7 }, { "key2", 23 } };
         }
+
+
+
+
+
+
+
+
+
+
+
+        public static object ConvertXmlStringToMorphedObjectGraph(string xmlString)
+        {
+            // String -> TextReader -> XamlXmlReader
+            using (TextReader textReader = new StringReader(xmlString))
+            using (var reader = new XamlXmlReader(textReader, System.Windows.Markup.XamlReader.GetWpfSchemaContext()))
+            using (var writer = new XamlObjectWriter(reader.SchemaContext))
+            {
+                // Цикл обработки узлов
+                while (reader.Read())
+                {
+                    // Пропустить события и x:Class
+                    if (reader.NodeType == XamlNodeType.StartMember &&
+                        reader.Member.IsEvent || reader.Member == XamlLanguage.Class)
+                    {
+                        reader.Skip();
+                    }
+                    if (reader.NodeType == XamlNodeType.StartObject &&
+                        reader.Type.UnderlyingType == typeof(Window))
+                    {
+                        // Преобразовать Window в Page
+                        writer.WriteStartObject(new XamlType(typeof(Page), reader.SchemaContext));
+                    }
+                    else
+                    {
+                        // в противном случав вывести узел без изменений 
+                        writer.WriteNode(reader);
+                    }
+                }
+                // По завершении работы XamlObjectWriter здесь будет
+                // экземпляр корневого объекта
+                return writer.Result;
+            }
+        }
+
+
+
+
+        public static string RewriteXaml(string xmlString)
+        {
+            // String -> TextReader -> XamlXmlReader
+            using (TextReader textReader = new StringReader(xmlString))
+            using (var reader = new XamlXmlReader(textReader))
+            // TextWriter -> XmlWriter -> XamlXmlWriter
+            using (var textWriter = new StringWriter())
+            using (var xmlWriter = XmlWriter.Create(textWriter, new XmlWriterSettings
+            {
+                Indent = true,
+                OmitXmlDeclaration = true
+            }))
+            using (var writer = new XamlXmlWriter(xmlWriter, reader.SchemaContext))
+            {
+                // Простой цикл обработки узлов
+                while (reader.Read())
+                {
+                    writer.WriteNode(reader);
+                }
+                return textWriter.ToString();
+            }
+        }
+
+
+
+
+        public static void Transform(XamlReader reader, XamlWriter writer)
+        {
+            var producer = reader as IXamlLineInfo;
+            var consumer = writer as IXamlLineInfoConsumer;
+            var transferLineInfo = producer != null && producer.HasLineInfo && consumer != null && consumer.ShouldProvideLineInfo;
+            // Улучшенный цикл обработки узлов
+            while (reader.Read())
+            {
+                // Передать информацию о строке
+                if (transferLineInfo && producer.LineNumber > 0)
+                    consumer.SetLineInfo(producer.LineNumber, producer.LinePosition);
+                writer.WriteNode(reader);
+            }
+        }
+
+        public static object ConvertXmlStringToObjectGraph(string xmlString)
+        {
+            // String -> TextReader -> XamlXmlReader
+            using (TextReader textReader = new StringReader(xmlString))
+            using (var reader = new XamlXmlReader(textReader, System.Windows.Markup.XamlReader.GetWpfSchemaContext()))
+            using (var writer = new XamlObjectWriter(reader.SchemaContext))
+            {
+                // Цико обработки узлов
+                XamlServices.Transform(reader, writer);
+                // По завершении работы XamlObjectWriter здесь будет
+                // экземпляр корневого объекта
+                return writer.Result;
+            }
+        }
+
 
     }
 }
