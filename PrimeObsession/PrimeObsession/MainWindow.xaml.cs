@@ -89,7 +89,7 @@ namespace PrimeObsession
 
             (int prime, TimeSpan time) results;
 
-            if(trs > 1)
+            if (trs > 1)
                 results = await Calculate(num, trs);
             else
                 results = await Calculate(num);
@@ -207,7 +207,7 @@ namespace PrimeObsession
         /// Многопоточное решение
         /// </summary>
         /// <param name="searchingNumber">Номер искомого числа</param>
-        /// <param name="threadsCount">Количество потоков (не факт, что CLR даст именно столько)</param>
+        /// <param name="threadsCount">Количество потоков</param>
         /// <returns></returns>
         private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
         {
@@ -273,8 +273,73 @@ namespace PrimeObsession
 
 
 
+        // то же самое, только с обычными потоками
+        //private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        var sw = new Stopwatch();
+        //        sw.Start();
 
+        //        var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
 
+        //        if (prime != null)
+        //        {
+        //            sw.Stop();
+        //            return (prime.Value, sw.Elapsed);
+        //        }
+
+        //        var number = divisorPrimes.Length;
+        //        var potentialPrime = divisorPrimes.Last();
+
+        //        var locker = new object();
+        //        var arrarr = new List<List<int>>();
+        //        var threads = new List<Thread>();
+        //        for (var x = 0;x < threadsCount;x++)
+        //        {
+        //            var t = new Thread(() =>
+        //            {
+        //                var primes = new List<int>();
+
+        //                while (number < searchingNumber)
+        //                {
+        //                    var pp = Interlocked.Add(ref potentialPrime, 2);
+        //                    var i = 0;
+
+        //                    while (true)
+        //                    {
+        //                        var divisorPrime = divisorPrimes[++i];
+        //                        if (pp % divisorPrime == 0)
+        //                            break;
+        //                        if (divisorPrime * divisorPrime < pp)
+        //                            continue;
+        //                        primes.Add(pp);
+        //                        Interlocked.Increment(ref number);
+        //                        break;
+        //                    }
+        //                }
+
+        //                lock (locker)
+        //                    arrarr.Add(primes);
+        //            }){ IsBackground = true };
+
+        //            threads.Add(t);
+        //            t.Start();
+        //        }
+
+        //        threads.ForEach(t => t.Join());
+
+        //        var array = arrarr
+        //            .SelectMany(arr => arr)
+        //            .ToArray();
+
+        //        Array.Sort(array);
+
+        //        sw.Stop();
+
+        //        return (array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
+        //    });
+        //}
 
 
 
