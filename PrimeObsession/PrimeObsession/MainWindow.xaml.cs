@@ -17,12 +17,6 @@ namespace PrimeObsession
         private string EnterNumber => $@"Введите номер простого числа (дефолт: {DefaultNumber}):";
         private string EnterThreads => $@"Введите число потоков (дефолт: {Environment.ProcessorCount})";
 
-        /// <summary>
-        /// Простые числа-делители
-        /// </summary>
-        private int[] _divisorPrimes; // int. long и даже uint всё равно никто ждать не будет =)
-
-
 
         public MainWindow()
         {
@@ -36,41 +30,6 @@ namespace PrimeObsession
             _number.PreviewKeyDown += _textBox_PreviewKeyDown;
             _threads.PreviewKeyDown += _textBox_PreviewKeyDown;
             _calculate.Click += _calculate_Click;
-            FillDivisorPrimes();
-        }
-
-
-
-        private void FillDivisorPrimes()
-        {
-            // Максимальный делитель
-            var maxDivisorPrime = (int)Math.Sqrt(int.MaxValue);
-            var currentDivisorPrime = 3;
-            var divisorPrimes = new List<int> { 2, currentDivisorPrime };
-
-            // Заполняем массив делителей
-            while (true)
-            {
-                if ((currentDivisorPrime += 2) > maxDivisorPrime)
-                    break;
-
-                var i = 0;
-                while (true)
-                {
-                    var divisorPrime = divisorPrimes[++i];
-
-                    if (currentDivisorPrime % divisorPrime == 0)
-                        break;
-
-                    if (divisorPrime * divisorPrime < currentDivisorPrime)
-                        continue;
-
-                    divisorPrimes.Add(currentDivisorPrime);
-                    break;
-                }
-            }
-
-            _divisorPrimes = divisorPrimes.ToArray();
         }
 
 
@@ -112,8 +71,7 @@ namespace PrimeObsession
             var numVal = int.TryParse(_number.Text, out var number);
             var trsVal = int.TryParse(_threads.Text, out var threadsCount);
 
-            if (number == 0 && !Equals(_number.Foreground, Brushes.LightGray)
-                || threadsCount == 0 && !Equals(_threads.Foreground, Brushes.LightGray))
+            if (number == 0 && !Equals(_number.Foreground, Brushes.LightGray) || threadsCount == 0 && !Equals(_threads.Foreground, Brushes.LightGray))
             {
                 if (number == 0)
                     _result.Content = "!";
@@ -126,8 +84,15 @@ namespace PrimeObsession
             _fog.Background = Brushes.Transparent;
             _bar.Visibility = Visibility.Visible;
 
-            var results = await Calculate(numVal ? number : DefaultNumber,
-                trsVal ? threadsCount : Environment.ProcessorCount);
+            var num = numVal ? number : DefaultNumber;
+            var trs = trsVal ? threadsCount : Environment.ProcessorCount;
+
+            (int prime, TimeSpan time) results;
+
+            if(trs > 1)
+                results = await Calculate(num, trs);
+            else
+                results = await Calculate(num);
 
             _result.Content = results.prime;
             _time.Content = results.time;
@@ -137,204 +102,189 @@ namespace PrimeObsession
 
 
 
-        private async Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
+        /// <summary>
+        /// Возвращает массив простых чисел-делителей
+        /// </summary>
+        /// <param name="searchingNumber">Номер искомого числа</param>
+        /// <param name="prime">Если на этой стадии будет найдено искомое число - его значение будет задесь</param>
+        /// <returns></returns>
+        private int[] GetDivisorPrimes(int searchingNumber, out int? prime)
         {
-            var sw = new Stopwatch();
-            sw.Start();
+            // Максимальный делитель
+            var maxDivisorPrime = (int)Math.Sqrt(int.MaxValue);
+            var currentDivisorPrime = 3;
+            var divisorPrimes = new List<int> { 2, currentDivisorPrime };
 
-            if (searchingNumber <= _divisorPrimes.Length)
+            // Заполняем массив делителей
+            var count = divisorPrimes.Count;
+            while (true)
             {
-                sw.Stop();
-                return (_divisorPrimes[searchingNumber - 1], sw.Elapsed);
-            }
+                if ((currentDivisorPrime += 2) > maxDivisorPrime)
+                    break;
 
-            var number = _divisorPrimes.Length;
-            var currentPrime = _divisorPrimes.Last();
-            var step = threadsCount * 2;
-            var tasks = new List<Task<int[]>>();
-            var length = (searchingNumber - number + (searchingNumber - number) % threadsCount) / threadsCount;
+                var i = 0;
 
-            for (var x = 1;x <= threadsCount;x++)
-            {
-                var cp = currentPrime + x * 2;
-                var task = Task.Run(() =>
+                while (count < searchingNumber)
                 {
-                    //var primes = new List<int>();
+                    var divisorPrime = divisorPrimes[++i];
 
-                    var primes = new int[length];
-                    var index = 0;
+                    if (currentDivisorPrime % divisorPrime == 0)
+                        break;
 
-                    while (/*number < searchingNumber*/ index < length)
-                    {
-                        var i = 0;
-                        while (true)
-                        {
-                            var divisorPrime = _divisorPrimes[++i];
+                    if (divisorPrime * divisorPrime < currentDivisorPrime)
+                        continue;
 
-                            if (cp % divisorPrime == 0)
-                                break;
-
-                            if (divisorPrime * divisorPrime < cp)
-                                continue;
-
-                            Interlocked.Increment(ref number);
-
-                            primes[index++] = cp;
-                            //primes.Add(cp);
-                            break;
-                        }
-                        cp += step;
-                    }
-
-                    return primes.ToArray();
-                });
-
-                tasks.Add(task);
+                    divisorPrimes.Add(currentDivisorPrime);
+                    ++count;
+                    break;
+                }
             }
 
-            await Task.WhenAll(tasks);
+            if (count >= searchingNumber)
+            {
+                prime = divisorPrimes[searchingNumber - 1];
+                return null;
+            }
 
-            var array = tasks
-                .SelectMany(t => t.Result)
-                .OrderBy(n => n)
-                .ToArray();
-
-            sw.Stop();
-
-            return (array[searchingNumber - _divisorPrimes.Length - 1], sw.Elapsed);
+            prime = null;
+            return divisorPrimes.ToArray();
         }
 
 
 
-        //private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        var sw = new Stopwatch();
-        //        sw.Start();
+        /// <summary>
+        /// Однопоточный эталон
+        /// </summary>
+        /// <param name="searchingNumber">Номер искомого числа</param>
+        /// <returns></returns>
+        private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber)
+        {
+            return Task.Run(() =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
 
-        //        if (searchingNumber <= _divisorPrimes.Length)
-        //        {
-        //            sw.Stop();
-        //            return (_divisorPrimes[searchingNumber - 1], sw.Elapsed);
-        //        }
+                var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
 
-        //        var number = _divisorPrimes.Length;
-        //        var currentPrime = _divisorPrimes.Last();
-        //        //var step = threadsCount * 2;
-        //        //var primes = new List<int>(_divisorPrimes);
+                if (prime != null)
+                {
+                    sw.Stop();
+                    return (prime.Value, sw.Elapsed);
+                }
 
-        //        while (number < searchingNumber)
-        //        {
-        //            currentPrime += 2;
-        //            var i = 0;
-        //            while (true)
-        //            {
-        //                var divisorPrime = _divisorPrimes[++i];
+                var number = divisorPrimes.Length;
+                var currentPrime = divisorPrimes.Last();
 
-        //                if (currentPrime % divisorPrime == 0)
-        //                    break;
+                while (number < searchingNumber)
+                {
+                    currentPrime += 2;
+                    var i = 0;
 
-        //                if (divisorPrime * divisorPrime < currentPrime)
-        //                    continue;
+                    while (true)
+                    {
+                        var divisorPrime = divisorPrimes[++i];
 
-        //                number++;
-        //                //primes.Add(currentPrime);
-        //                break;
-        //            }
-        //        }
+                        if (currentPrime % divisorPrime == 0)
+                            break;
 
-        //        sw.Stop();
+                        if (divisorPrime * divisorPrime < currentPrime)
+                            continue;
 
-        //        return (currentPrime, sw.Elapsed);
-        //    });
-        //}
+                        number++;
+                        break;
+                    }
+                }
+
+                sw.Stop();
+
+                return (currentPrime, sw.Elapsed);
+            });
+        }
+
+
+
+        /// <summary>
+        /// Многопоточное решение
+        /// </summary>
+        /// <param name="searchingNumber">Номер искомого числа</param>
+        /// <param name="threadsCount">Количество потоков (не факт, что CLR даст именно столько)</param>
+        /// <returns></returns>
+        private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
+        {
+            return Task.Run(() =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
+
+                if (prime != null)
+                {
+                    sw.Stop();
+                    return (prime.Value, sw.Elapsed);
+                }
+
+                var number = divisorPrimes.Length;
+                var potentialPrime = divisorPrimes.Last();
+
+                var array = Enumerable
+                    .Range(0, threadsCount)
+                    .AsParallel()
+                    .SelectMany(x =>
+                    {
+                        var primes = new List<int>();
+
+                        while (number < searchingNumber)
+                        {
+                            var pp = Interlocked.Add(ref potentialPrime, 2);
+                            var i = 0;
+
+                            while (true)
+                            {
+                                var divisorPrime = divisorPrimes[++i];
+                                if (pp % divisorPrime == 0)
+                                    break;
+                                if (divisorPrime * divisorPrime < pp)
+                                    continue;
+                                primes.Add(pp);
+                                Interlocked.Increment(ref number);
+                                break;
+                            }
+                        }
+
+                        return primes;
+                    })
+                    .ToArray();
+
+                Array.Sort(array);
+
+                sw.Stop();
+
+                return (array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-#region select
-
-//var resultPrime = await Task.Run(() =>
-//{
-//    sw.Start();
-//    if (searchingNumber == 1)
-//        return 2;
-
-//    var primes = new List<int> { 2, 3 };
-//    var collection = Enumerable
-//        .Range(2, searchingNumber - 2)
-//        .Select(n =>
-//        {
-//            var prime = primes.Last();
-//            while (true)
-//            {
-//                prime += 2;
-//                for (var i = 1;;i++)
-//                {
-//                    var currentDivisor = primes[i];
-
-//                    if (prime % currentDivisor == 0)
-//                        break;
-
-//                    if (currentDivisor * currentDivisor < prime)
-//                        continue;
-
-//                    primes.Add(prime);
-//                    return prime;
-//                }
-//            }
-//        });
-//    var res = searchingNumber == 2 ? 3 : collection.Last();
-//    sw.Stop();
-//    return res;
-//});
-
-#endregion
-
-#region aggr
-
-//var resultPrime = await Task.Run(() =>
-//{
-//    sw.Start();
-//    if (searchingNumber == 1)
-//        return 2;
-//    var res = Enumerable
-//        .Range(2, searchingNumber - 2)
-//        //.AsParallel()
-//        .Aggregate(new List<int> { 2, 3 }, (primes, n) =>
-//        {
-//            var prime = primes.Last();
-//            while (true)
-//            {
-//                prime += 2;
-//                for (var i = 1;;i++)
-//                {
-//                    var currentDivisor = primes[i];
-
-//                    if (prime % currentDivisor == 0)
-//                        break;
-
-//                    if (currentDivisor * currentDivisor < prime)
-//                        continue;
-
-//                    primes.Add(prime);
-//                    return primes;
-//                }
-//            }
-//        }, primes => primes.Last());
-//    sw.Stop();
-//    return res;
-//});
-
-#endregion
