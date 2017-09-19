@@ -139,6 +139,29 @@ namespace PrimeObsession
                 }
             }
 
+
+            //const int N = 1000 * 1000;
+            //var primes = new List<int> { 1, 2 };
+            //for (int i = 3; i < N; ++i)
+            //{
+            //    bool was = false;
+            //    for (int j = 0; j < primes.Count; ++j)
+            //    {
+            //        if (primes[j] * primes[j] > i)
+            //            break;
+            //        else if (i % primes[j] == 0)
+            //        {
+            //            was = true;
+            //            break;
+            //        }
+            //    }
+            //    if (!was)
+            //        primes.Add(i);
+            //}
+
+
+
+
             if (count >= searchingNumber)
             {
                 prime = divisorPrimes[searchingNumber - 1];
