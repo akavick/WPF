@@ -3,25 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ProcessDispatcher"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800">
+        Title="ProcessViewer" Height="600" Width="800">
     <DockPanel>
-        <ListView
-            DockPanel.Dock="Bottom">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn />
-                    <GridViewColumn />
-                    <GridViewColumn />
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <Button
+            x:Name="_refresh"
+            DockPanel.Dock="Bottom"
+            Content="Refresh">
+        </Button>
         <DataGrid
             x:Name="_dataGrid"
             IsReadOnly="True" 
             HorizontalGridLinesBrush="Bisque"
             VerticalGridLinesBrush="Gray"/>
-
     </DockPanel>
 </Window>

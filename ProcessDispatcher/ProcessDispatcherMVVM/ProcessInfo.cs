@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProcessDispatcherMVVM
+﻿namespace ProcessDispatcherMVVM
 {
     public class ProcessInfo
     {
@@ -13,14 +7,14 @@ namespace ProcessDispatcherMVVM
         public int Threads { get; set; }
         public int Descriptors { get; set; }
         public string Priority { get; set; }
-        //p.WorkingSet64,
-        //p.VirtualMemorySize64,
-        //p.PrivateMemorySize64,
-        //p.PeakWorkingSet64,
-        //p.PeakVirtualMemorySize64,
-        //p.PeakPagedMemorySize64,
-        //p.PagedSystemMemorySize64,
-        //p.PagedMemorySize64,
-        //p.NonpagedSystemMemorySize64,
+        public long WorkingSet { get; set; }
+        public long VirtualMemorySize { get; set; }
+        public long PrivateMemorySize { get; set; }
+        public long PeakWorkingSet { get; set; }
+        public long PeakVirtualMemorySize { get; set; }
+        public long PeakPagedMemorySize { get; set; }
+        public long PagedSystemMemorySize { get; set; }
+        public long PagedMemorySize { get; set; }
+        public long NonpagedSystemMemorySize { get; set; }
     }
 }

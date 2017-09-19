@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Threading;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 
@@ -16,7 +11,6 @@ namespace ProcessDispatcherMVVM
     {
         private ICommand _refresh;
         private ObservableCollection<ProcessInfo> _processInfos;
-        private readonly DispatcherTimer _timer;
 
 
         public ICommand Refresh => _refresh ?? (_refresh = new RelayCommand(Renew));
@@ -27,7 +21,7 @@ namespace ProcessDispatcherMVVM
             private set
             {
                 _processInfos = value;
-                RaisePropertyChanged(/*() => ProcessInfos*/);
+                RaisePropertyChanged(() => ProcessInfos);
             }
         }
 
@@ -35,9 +29,6 @@ namespace ProcessDispatcherMVVM
         public MainViewModel()
         {
             Renew();
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(3000) };
-            _timer.Tick += (s, e) => Renew();
-            _timer.Start();
         }
 
 
@@ -62,7 +53,16 @@ namespace ProcessDispatcherMVVM
                     Name = p.ProcessName,
                     Threads = p.Threads.Count,
                     Descriptors = p.HandleCount,
-                    Priority = priority
+                    Priority = priority,
+                    WorkingSet = p.WorkingSet64,
+                    VirtualMemorySize = p.VirtualMemorySize64,
+                    PrivateMemorySize = p.PrivateMemorySize64,
+                    PeakWorkingSet = p.PeakWorkingSet64,
+                    PeakVirtualMemorySize = p.PeakVirtualMemorySize64,
+                    PeakPagedMemorySize = p.PeakPagedMemorySize64,
+                    PagedSystemMemorySize = p.PagedSystemMemorySize64,
+                    PagedMemorySize = p.PagedMemorySize64,
+                    NonpagedSystemMemorySize = p.NonpagedSystemMemorySize64
                 };
             });
 

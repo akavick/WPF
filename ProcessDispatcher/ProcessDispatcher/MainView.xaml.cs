@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
 
 namespace ProcessDispatcher
 {
     public partial class MainView
     {
-        private DispatcherTimer _timer;
-
         private static ObservableCollection<T> GetAnonymousObservableCollection<T>(IEnumerable<T> collection)
         {
             return new ObservableCollection<T>(collection);
@@ -21,21 +16,13 @@ namespace ProcessDispatcher
         public MainView()
         {
             InitializeComponent();
-            Loaded += MainWindow_Loaded;
+            _refresh.Click += async (s, e) => await Refresh();
+            Loaded += async (s, e) => await Refresh();
         }
-
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(3000) };
-            _timer.Tick += async (s, ea) => await Refresh();
-            await Refresh();
-        }
-
 
         private async Task Refresh()
         {
-            _timer.Stop();
-
+            _refresh.IsEnabled = false;
             var collection = await Task.Run(() =>
             {
                 var processes = Process.GetProcesses().Select(p =>
@@ -53,20 +40,20 @@ namespace ProcessDispatcher
 
                     return new
                     {
-                        p.Id,
+                        ID = p.Id,
                         Name = p.ProcessName,
                         Threads = p.Threads.Count,
                         Descriptors = p.HandleCount,
                         Priority = priority,
-                        //p.WorkingSet64,
-                        //p.VirtualMemorySize64,
-                        //p.PrivateMemorySize64,
-                        //p.PeakWorkingSet64,
-                        //p.PeakVirtualMemorySize64,
-                        //p.PeakPagedMemorySize64,
-                        //p.PagedSystemMemorySize64,
-                        //p.PagedMemorySize64,
-                        //p.NonpagedSystemMemorySize64,
+                        WorkingSet = p.WorkingSet64,
+                        VirtualMemorySize = p.VirtualMemorySize64,
+                        PrivateMemorySize = p.PrivateMemorySize64,
+                        PeakWorkingSet = p.PeakWorkingSet64,
+                        PeakVirtualMemorySize = p.PeakVirtualMemorySize64,
+                        PeakPagedMemorySize = p.PeakPagedMemorySize64,
+                        PagedSystemMemorySize = p.PagedSystemMemorySize64,
+                        PagedMemorySize = p.PagedMemorySize64,
+                        NonpagedSystemMemorySize = p.NonpagedSystemMemorySize64
                     };
                 });
 
@@ -74,7 +61,7 @@ namespace ProcessDispatcher
             });
 
             _dataGrid.ItemsSource = collection;
-            _timer.Start();
+            _refresh.IsEnabled = true;
         }
 
     }

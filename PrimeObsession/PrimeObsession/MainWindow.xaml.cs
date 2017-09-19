@@ -30,40 +30,6 @@ namespace PrimeObsession
             _number.PreviewKeyDown += _textBox_PreviewKeyDown;
             _threads.PreviewKeyDown += _textBox_PreviewKeyDown;
             _calculate.Click += _calculate_Click;
-
-            /*
-             
-             
-             Вход: натуральное число n
-
-Пусть A — булевый массив, индексируемый числами от 2 до n, 
-изначально заполненный значениями true.
-
- для i := 2, 3, 4, ..., пока i2 ≤ n:
-  если A[i] = true:
-    для j := i2, i2 + i, i2 + 2i, ..., пока j ≤ n:
-      A[j] := false
-
-Выход: числа i, для которых A[i] = true.
-             
-             
-             */
-
-            var bools = Enumerable
-                .Range(0, 1000000)
-                .Select(x => true)
-                .ToArray();
-
-            for (int i = 0; i <= bools.Length; i++)
-            {
-                if (bools[i])
-                {
-                    for (int j = 0; j <= bools.Length; j++)
-                    {
-
-                    }
-                }
-            }
         }
 
 
@@ -135,6 +101,8 @@ namespace PrimeObsession
         }
 
 
+
+        #region Перебором делителей
 
         /// <summary>
         /// Возвращает массив простых чисел-делителей
@@ -295,93 +263,7 @@ namespace PrimeObsession
             });
         }
 
-
-
-
-
-
-
-
-
-
-        // то же самое, только с обычными потоками
-        //private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        var sw = new Stopwatch();
-        //        sw.Start();
-
-        //        var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
-
-        //        if (prime != null)
-        //        {
-        //            sw.Stop();
-        //            return (prime.Value, sw.Elapsed);
-        //        }
-
-        //        var number = divisorPrimes.Length;
-        //        var potentialPrime = divisorPrimes.Last();
-
-        //        var locker = new object();
-        //        var arrarr = new List<List<int>>();
-        //        var threads = new List<Thread>();
-        //        for (var x = 0; x < threadsCount; x++)
-        //        {
-        //            var t = new Thread(() =>
-        //            {
-        //                var primes = new List<int>();
-
-        //                while (number < searchingNumber)
-        //                {
-        //                    var pp = Interlocked.Add(ref potentialPrime, 2);
-        //                    var i = 0;
-
-        //                    while (true)
-        //                    {
-        //                        var divisorPrime = divisorPrimes[++i];
-        //                        if (pp % divisorPrime == 0)
-        //                            break;
-        //                        if (divisorPrime * divisorPrime < pp)
-        //                            continue;
-        //                        primes.Add(pp);
-        //                        Interlocked.Increment(ref number);
-        //                        break;
-        //                    }
-        //                }
-
-        //                lock (locker)
-        //                    arrarr.Add(primes);
-        //            })
-        //            { IsBackground = true };
-
-        //            threads.Add(t);
-        //            t.Start();
-        //        }
-
-        //        threads.ForEach(t => t.Join());
-
-        //        var array = arrarr
-        //            .SelectMany(arr => arr)
-        //            .ToArray();
-
-        //        Array.Sort(array);
-
-        //        sw.Stop();
-
-        //        return (array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
-        //    });
-        //}
-
-
-
-
-
-
-
-
-
-
+        #endregion
 
     }
 }
