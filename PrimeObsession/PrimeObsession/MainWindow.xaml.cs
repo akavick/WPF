@@ -30,6 +30,40 @@ namespace PrimeObsession
             _number.PreviewKeyDown += _textBox_PreviewKeyDown;
             _threads.PreviewKeyDown += _textBox_PreviewKeyDown;
             _calculate.Click += _calculate_Click;
+
+            /*
+             
+             
+             Вход: натуральное число n
+
+Пусть A — булевый массив, индексируемый числами от 2 до n, 
+изначально заполненный значениями true.
+
+ для i := 2, 3, 4, ..., пока i2 ≤ n:
+  если A[i] = true:
+    для j := i2, i2 + i, i2 + 2i, ..., пока j ≤ n:
+      A[j] := false
+
+Выход: числа i, для которых A[i] = true.
+             
+             
+             */
+
+            var bools = Enumerable
+                .Range(0, 1000000)
+                .Select(x => true)
+                .ToArray();
+
+            for (int i = 0; i <= bools.Length; i++)
+            {
+                if (bools[i])
+                {
+                    for (int j = 0; j <= bools.Length; j++)
+                    {
+
+                    }
+                }
+            }
         }
 
 
@@ -41,14 +75,14 @@ namespace PrimeObsession
             if (e.Key == Key.Back || e.Key == Key.Delete || e.Key == Key.Left || e.Key == Key.Right)
                 return;
             var str = new KeyConverter().ConvertToString(e.Key)?.Replace("NumPad", "");
-            e.Handled = !int.TryParse(str, out var _);
+            e.Handled = !int.TryParse(str, out _);
         }
 
 
 
         private void _textBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (!(sender is TextBox tb) || int.TryParse(tb.Text, out var _))
+            if (!(sender is TextBox tb) || int.TryParse(tb.Text, out _))
                 return;
             tb.Text = Equals(tb, _number) ? EnterNumber : EnterThreads;
             tb.Foreground = Brushes.LightGray;
@@ -58,7 +92,7 @@ namespace PrimeObsession
 
         private void _textBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (!(sender is TextBox tb) || int.TryParse(tb.Text, out var _))
+            if (!(sender is TextBox tb) || int.TryParse(tb.Text, out _))
                 return;
             tb.Text = "";
             tb.Foreground = Brushes.Black;
@@ -117,11 +151,8 @@ namespace PrimeObsession
 
             // Заполняем массив делителей
             var count = divisorPrimes.Count;
-            while (true)
+            while ((currentDivisorPrime += 2) < maxDivisorPrime)
             {
-                if ((currentDivisorPrime += 2) > maxDivisorPrime)
-                    break;
-
                 var i = 0;
 
                 while (count < searchingNumber)

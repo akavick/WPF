@@ -14,8 +14,8 @@ namespace PrimeObsessionOldFramework
     public partial class MainWindow
     {
         private const int DefaultNumber = 1;
-        private string EnterNumber => $@"Введите номер простого числа (дефолт: {DefaultNumber}):";
-        private string EnterThreads => $@"Введите число потоков (дефолт: {Environment.ProcessorCount})";
+        private string EnterNumber => string.Format(@"Введите номер простого числа (дефолт: {0}):", DefaultNumber);
+        private string EnterThreads => string.Format(@"Введите число потоков (дефолт: {0})", Environment.ProcessorCount);
 
 
         public MainWindow()
@@ -38,18 +38,27 @@ namespace PrimeObsessionOldFramework
         {
             if (!(sender is TextBox))
                 return;
+
             if (e.Key == Key.Back || e.Key == Key.Delete || e.Key == Key.Left || e.Key == Key.Right)
                 return;
+
             var str = new KeyConverter().ConvertToString(e.Key)?.Replace("NumPad", "");
-            e.Handled = !int.TryParse(str, out var _);
+            int outvar;
+            e.Handled = !int.TryParse(str, out outvar);
         }
 
 
 
         private void _textBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (!(sender is TextBox tb) || int.TryParse(tb.Text, out var _))
+            TextBox tb = sender as TextBox;
+            if (tb == null)
                 return;
+
+            int outvar;
+            if (int.TryParse(tb.Text, out outvar))
+                return;
+
             tb.Text = Equals(tb, _number) ? EnterNumber : EnterThreads;
             tb.Foreground = Brushes.LightGray;
         }
@@ -58,8 +67,14 @@ namespace PrimeObsessionOldFramework
 
         private void _textBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (!(sender is TextBox tb) || int.TryParse(tb.Text, out var _))
+            TextBox tb = sender as TextBox;
+            if (tb == null)
                 return;
+
+            int outvar;
+            if (int.TryParse(tb.Text, out outvar))
+                return;
+
             tb.Text = "";
             tb.Foreground = Brushes.Black;
         }
@@ -68,8 +83,10 @@ namespace PrimeObsessionOldFramework
 
         private async void _calculate_Click(object sender, RoutedEventArgs e)
         {
-            var numVal = int.TryParse(_number.Text, out var number);
-            var trsVal = int.TryParse(_threads.Text, out var threadsCount);
+            int number;
+            int threadsCount;
+            var numVal = int.TryParse(_number.Text, out number);
+            var trsVal = int.TryParse(_threads.Text, out threadsCount);
 
             if (number == 0 && !Equals(_number.Foreground, Brushes.LightGray) || threadsCount == 0 && !Equals(_threads.Foreground, Brushes.LightGray))
             {
@@ -117,11 +134,8 @@ namespace PrimeObsessionOldFramework
 
             // Заполняем массив делителей
             var count = divisorPrimes.Count;
-            while (true)
+            while ((currentDivisorPrime += 2) < maxDivisorPrime)
             {
-                if ((currentDivisorPrime += 2) > maxDivisorPrime)
-                    break;
-
                 var i = 0;
 
                 while (count < searchingNumber)
@@ -164,7 +178,8 @@ namespace PrimeObsessionOldFramework
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
+                int? prime;
+                var divisorPrimes = GetDivisorPrimes(searchingNumber, out prime);
 
                 if (prime != null)
                 {
@@ -216,7 +231,8 @@ namespace PrimeObsessionOldFramework
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
+                int? prime;
+                var divisorPrimes = GetDivisorPrimes(searchingNumber, out prime);
 
                 if (prime != null)
                 {
@@ -281,7 +297,8 @@ namespace PrimeObsessionOldFramework
         //        var sw = new Stopwatch();
         //        sw.Start();
 
-        //        var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
+        //        int? prime;
+        //        var divisorPrimes = GetDivisorPrimes(searchingNumber, out prime);
 
         //        if (prime != null)
         //        {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,11 +24,14 @@ namespace RecursiveWidthDepthSearch
 
         private async Task Run()
         {
-            const int side = 8;
+            const int side = 7;
             var found = false;
             var locker = new object();
             var rand = new Random();
             var range = Enumerable.Range(0, side).ToArray();
+
+            var sw = new Stopwatch();
+            sw.Start();
 
             var tasks = range
                 .SelectMany(i => range.Select(j => (i, j)))
@@ -98,6 +102,8 @@ namespace RecursiveWidthDepthSearch
 
             if (!found)
                 Console.WriteLine("Path not Found");
+
+            Console.WriteLine(sw.Elapsed);
         }
 
 
