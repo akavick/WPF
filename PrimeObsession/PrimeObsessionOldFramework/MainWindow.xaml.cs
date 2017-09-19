@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace PrimeObsession
+namespace PrimeObsessionOldFramework
 {
     public partial class MainWindow
     {
@@ -87,15 +87,15 @@ namespace PrimeObsession
             var num = numVal ? number : DefaultNumber;
             var trs = trsVal ? threadsCount : Environment.ProcessorCount;
 
-            (int prime, TimeSpan time) results;
+            Tuple<int, TimeSpan> results;
 
             if (trs > 1)
                 results = await Calculate(num, trs);
             else
                 results = await Calculate(num);
 
-            _result.Content = results.prime;
-            _time.Content = results.time;
+            _result.Content = results.Item1;
+            _time.Content = results.Item2;
             _bar.Visibility = Visibility.Collapsed;
             _fog.Background = null;
         }
@@ -157,7 +157,7 @@ namespace PrimeObsession
         /// </summary>
         /// <param name="searchingNumber">Номер искомого числа</param>
         /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber)
+        private Task<Tuple<int, TimeSpan>> Calculate(int searchingNumber)
         {
             return Task.Run(() =>
             {
@@ -169,7 +169,7 @@ namespace PrimeObsession
                 if (prime != null)
                 {
                     sw.Stop();
-                    return (prime.Value, sw.Elapsed);
+                    return new Tuple<int, TimeSpan>(prime.Value, sw.Elapsed);
                 }
 
                 var number = divisorPrimes.Length;
@@ -197,7 +197,7 @@ namespace PrimeObsession
 
                 sw.Stop();
 
-                return (currentPrime, sw.Elapsed);
+                return new Tuple<int, TimeSpan>(currentPrime, sw.Elapsed);
             });
         }
 
@@ -209,7 +209,7 @@ namespace PrimeObsession
         /// <param name="searchingNumber">Номер искомого числа</param>
         /// <param name="threadsCount">Количество потоков</param>
         /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
+        private Task<Tuple<int, TimeSpan>> Calculate(int searchingNumber, int threadsCount)
         {
             return Task.Run(() =>
             {
@@ -221,7 +221,7 @@ namespace PrimeObsession
                 if (prime != null)
                 {
                     sw.Stop();
-                    return (prime.Value, sw.Elapsed);
+                    return new Tuple<int, TimeSpan>(prime.Value, sw.Elapsed);
                 }
 
                 var number = divisorPrimes.Length;
@@ -260,7 +260,7 @@ namespace PrimeObsession
 
                 sw.Stop();
 
-                return (array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
+                return new Tuple<int, TimeSpan>(array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
             });
         }
 
@@ -273,8 +273,8 @@ namespace PrimeObsession
 
 
 
-        // то же самое, только с обычными потоками
-        //private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
+        //////// то же самое, только с обычными потоками
+        //private Task<Tuple<int, TimeSpan>> Calculate(int searchingNumber, int threadsCount)
         //{
         //    return Task.Run(() =>
         //    {
@@ -286,7 +286,7 @@ namespace PrimeObsession
         //        if (prime != null)
         //        {
         //            sw.Stop();
-        //            return (prime.Value, sw.Elapsed);
+        //            return new Tuple<int, TimeSpan>(prime.Value, sw.Elapsed);
         //        }
 
         //        var number = divisorPrimes.Length;
@@ -338,7 +338,7 @@ namespace PrimeObsession
 
         //        sw.Stop();
 
-        //        return (array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
+        //        return new Tuple<int, TimeSpan>(array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
         //    });
         //}
 

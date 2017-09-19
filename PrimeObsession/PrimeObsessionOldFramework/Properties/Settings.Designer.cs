@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PrimeObsession.Properties
+namespace PrimeObsessionOldFramework.Properties
 {
 
 

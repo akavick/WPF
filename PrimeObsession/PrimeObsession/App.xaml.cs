@@ -1,4 +1,4 @@
-﻿namespace SimpleObsession
+﻿namespace PrimeObsession
 {
     public partial class App
     {
