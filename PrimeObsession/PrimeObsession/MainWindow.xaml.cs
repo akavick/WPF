@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,10 +14,16 @@ namespace PrimeObsession
 {
     public partial class MainWindow
     {
+        #region Поля, Константы, Свойства
+
         private const int DefaultNumber = 1;
         private string EnterNumber => $@"Введите номер простого числа (дефолт: {DefaultNumber}):";
         private string EnterThreads => $@"Введите число потоков (дефолт: {Environment.ProcessorCount})";
 
+        #endregion
+
+
+        #region Конструктор
 
         public MainWindow()
         {
@@ -29,10 +36,14 @@ namespace PrimeObsession
             _threads.LostFocus += _textBox_LostFocus;
             _number.PreviewKeyDown += _textBox_PreviewKeyDown;
             _threads.PreviewKeyDown += _textBox_PreviewKeyDown;
-            _calculate.Click += _calculate_Click;
+            _calculateD.Click += CalculateClick;
+            _calculateE.Click += CalculateClick;
         }
 
+        #endregion
 
+
+        #region Обработчики событий
 
         private void _textBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -66,7 +77,7 @@ namespace PrimeObsession
 
 
 
-        private async void _calculate_Click(object sender, RoutedEventArgs e)
+        private async void CalculateClick(object sender, RoutedEventArgs e)
         {
             var numVal = int.TryParse(_number.Text, out var number);
             var trsVal = int.TryParse(_threads.Text, out var threadsCount);
@@ -89,10 +100,20 @@ namespace PrimeObsession
 
             (int prime, TimeSpan time) results;
 
-            if (trs > 1)
-                results = await Calculate(num, trs);
+            if (Equals(sender as Button, _calculateD))
+            {
+                if (trs > 1)
+                    results = await CalculateD(num, trs);
+                else
+                    results = await CalculateD(num);
+            }
             else
-                results = await Calculate(num);
+            {
+                if (trs > 1)
+                    results = await CalculateE(num, trs);
+                else
+                    results = await CalculateE(num);
+            }
 
             _result.Content = results.prime;
             _time.Content = results.time;
@@ -100,6 +121,146 @@ namespace PrimeObsession
             _fog.Background = null;
         }
 
+        #endregion
+
+
+        #region Решето Эратосфена
+
+        /// <summary>
+        /// Однопоточный эталон
+        /// </summary>
+        /// <param name="sNum">Номер искомого числа</param>
+        /// <returns></returns>
+        private Task<(int prime, TimeSpan time)> CalculateE(int sNum)
+        {
+            return Task.Run(() =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
+                if (size < 12)
+                    size = 12;
+
+                //var bools = new BitArray(size);
+                ////var bools = new bool[size];
+
+                //for (var i = 2; i < size; i++)
+                //    bools[i] = true;
+
+
+                //for (var number = 2; number * number < size; ++number)
+                //{
+                //    if (!bools[number])
+                //        continue;
+                //    for (var j = number * number; j < size; j += number)
+                //        bools[j] = false;
+                //}
+
+                //var prime = 0;
+
+                //for (int number = 2, counter = 1; number < size; number++)
+                //{
+                //    if (bools[number] && counter++ == sNum)
+                //    {
+                //        prime = number;
+                //        break;
+                //    }
+                //}
+
+
+                var bools = new BitArray(size);
+                //var bools = new bool[size];
+
+                for (var i = 1; i < size; i++)
+                    bools[i] = true;
+
+                /*
+
+                 function sieve2(n){
+                 S = []; 
+                 // заполняем решето единицами
+                 for(k=1; k<=n; k++)
+                  S[k]=1;
+
+                 for(k=1; (2*k+1)*(2*k+1)<=2*n+1; k++){
+                  // если 2k+1 - простое (т. е. k не вычеркнуто)
+                  if(S[k]==1){ 
+                   // то вычеркнем кратные 2k+1
+                   for(l=3*k+1; l<=n; l+=2*k+1){
+                    S[l]=0;
+                    }
+                   }
+                  }
+                 // теперь S[k]=1 тогда и только тогда, когда 2k+1 - простое
+                 return S;
+                 }
+
+
+                 */
+
+                for (var number = 1; (2 * number + 1) * (2 * number + 1) < (2 * size + 1); ++number)
+                {
+                    if (!bools[number])
+                        continue;
+                    for (var j = (3 * number + 1)/*number * number*/; j < size; j += (2 * number + 1))
+                        bools[j] = false;
+                }
+
+                var prime = 0;
+
+                for (int number = 1, counter = 1; number < size; number++)
+                {
+                    if (bools[number] && counter++ == sNum)
+                    {
+                        prime = (2 * number + 1);
+                        break;
+                    }
+                }
+
+
+
+                sw.Stop();
+
+                return (prime, sw.Elapsed);
+            });
+        }
+
+
+
+        /// <summary>
+        /// Многопоточное решение
+        /// </summary>
+        /// <param name="sNum">Номер искомого числа</param>
+        /// <param name="threadsCount">Количество потоков</param>
+        /// <returns></returns>
+        private Task<(int prime, TimeSpan time)> CalculateE(int sNum, int threadsCount)
+        {
+            return CalculateE(sNum);
+
+            //return Task.Run(() =>
+            //{
+            //    var sw = new Stopwatch();
+            //    sw.Start();
+
+            //    var array = Enumerable
+            //        .Range(0, threadsCount)
+            //        .AsParallel()
+            //        .SelectMany(x =>
+            //        {
+            //            return new int[1];
+            //        })
+            //        .ToArray();
+
+            //    Array.Sort(array);
+
+            //    sw.Stop();
+
+            //    return (array[0], sw.Elapsed);
+            //});
+        }
+
+        #endregion
 
 
         #region Перебором делителей
@@ -110,7 +271,7 @@ namespace PrimeObsession
         /// <param name="searchingNumber">Номер искомого числа</param>
         /// <param name="prime">Если на этой стадии будет найдено искомое число - его значение будет задесь</param>
         /// <returns></returns>
-        private int[] GetDivisorPrimes(int searchingNumber, out int? prime)
+        private int[] GetDivisorPrimesD(int searchingNumber, out int? prime)
         {
             // Максимальный делитель
             var maxDivisorPrime = (int)Math.Sqrt(int.MaxValue);
@@ -140,28 +301,6 @@ namespace PrimeObsession
             }
 
 
-            //const int N = 1000 * 1000;
-            //var primes = new List<int> { 1, 2 };
-            //for (int i = 3; i < N; ++i)
-            //{
-            //    bool was = false;
-            //    for (int j = 0; j < primes.Count; ++j)
-            //    {
-            //        if (primes[j] * primes[j] > i)
-            //            break;
-            //        else if (i % primes[j] == 0)
-            //        {
-            //            was = true;
-            //            break;
-            //        }
-            //    }
-            //    if (!was)
-            //        primes.Add(i);
-            //}
-
-
-
-
             if (count >= searchingNumber)
             {
                 prime = divisorPrimes[searchingNumber - 1];
@@ -179,14 +318,14 @@ namespace PrimeObsession
         /// </summary>
         /// <param name="searchingNumber">Номер искомого числа</param>
         /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber)
+        private Task<(int prime, TimeSpan time)> CalculateD(int searchingNumber)
         {
             return Task.Run(() =>
             {
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
+                var divisorPrimes = GetDivisorPrimesD(searchingNumber, out var prime);
 
                 if (prime != null)
                 {
@@ -231,14 +370,14 @@ namespace PrimeObsession
         /// <param name="searchingNumber">Номер искомого числа</param>
         /// <param name="threadsCount">Количество потоков</param>
         /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> Calculate(int searchingNumber, int threadsCount)
+        private Task<(int prime, TimeSpan time)> CalculateD(int searchingNumber, int threadsCount)
         {
             return Task.Run(() =>
             {
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var divisorPrimes = GetDivisorPrimes(searchingNumber, out var prime);
+                var divisorPrimes = GetDivisorPrimesD(searchingNumber, out var prime);
 
                 if (prime != null)
                 {

@@ -84,11 +84,18 @@
 
         <Button
             Grid.Column="0"
-            Grid.ColumnSpan="2"
             Style="{StaticResource _style1}"
-            x:Name="_calculate"
+            x:Name="_calculateD"
             Grid.Row="2"
-            Content="Calculate!"
+            Content="Рассчитать перебором"
+            FontSize="20" />
+
+        <Button
+            Grid.Column="1"
+            Style="{StaticResource _style1}"
+            x:Name="_calculateE"
+            Grid.Row="2"
+            Content="Просеять через решето"
             FontSize="20" />
 
         <Grid
@@ -103,7 +110,7 @@
                 Background="White"
                 Style="{StaticResource _style1}"
                 IsIndeterminate="True"
-                Height="{Binding ElementName=_calculate, Path=ActualHeight}"
+                Height="{Binding ElementName=_calculateD, Path=ActualHeight}"
                 Width="{Binding ElementName=_result, Path=ActualWidth}"
                 Visibility="Collapsed"/>
 
