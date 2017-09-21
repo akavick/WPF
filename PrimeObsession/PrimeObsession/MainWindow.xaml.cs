@@ -131,6 +131,113 @@ namespace PrimeObsession
         /// </summary>
         /// <param name="sNum">Номер искомого числа</param>
         /// <returns></returns>
+        //private Task<(int prime, TimeSpan time)> CalculateE(int sNum)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        var sw = new Stopwatch();
+        //        sw.Start();
+
+        //        var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
+        //        if (size < 12)
+        //            size = 12;
+
+        //        #region woOptimization
+
+        //        //var bools = new BitArray(size);
+        //        ////var bools = new bool[size];
+
+        //        //for (var i = 2; i < size; i++)
+        //        //    bools[i] = true;
+
+        //        //for (var number = 2; number * number < size; ++number)
+        //        //{
+        //        //    if (!bools[number])
+        //        //        continue;
+        //        //    for (var j = number * number; j < size; j += number)
+        //        //        bools[j] = false;
+        //        //}
+
+        //        //var prime = 0;
+
+        //        //for (int number = 2, counter = 1; number < size; number++)
+        //        //{
+        //        //    if (bools[number] && counter++ == sNum)
+        //        //    {
+        //        //        prime = number;
+        //        //        break;
+        //        //    }
+        //        //}
+
+        //        #endregion
+
+
+        //        #region Optimization
+
+        //        var bools = new BitArray(size);
+        //        //var bools = new bool[size];
+
+        //        for (var i = 1; i < size; i++)
+        //            bools[i] = true;
+
+
+        //        #region while
+
+        //        //var number = 1;
+        //        //while (true)
+        //        //{
+        //        //    var step = 2 * number + 1;
+        //        //    if (step * step > 2 * size)
+        //        //        break;
+        //        //    // если 2k+1 - простое (т. е. k не вычеркнуто)
+        //        //    if (!bools[number])
+        //        //    {
+        //        //        ++number;
+        //        //        continue;
+        //        //    }
+        //        //    // то вычеркнем кратные 2k+1
+        //        //    for (var j = 3 * number + 1/*number * number*/; j < size; j += step)
+        //        //        bools[j] = false;
+        //        //    ++number;
+        //        //}// теперь S[k]=1 тогда и только тогда, когда 2k+1 - простое
+
+        //        #endregion
+
+        //        #region for
+
+        //        for (var number = 1; (2 * number + 1) * (2 * number + 1) < 2 * size + 1; ++number)
+        //        {
+        //            if (!bools[number])
+        //                continue;
+        //            for (var j = 3 * number + 1/*number * number*/; j < size; j += 2 * number + 1)
+        //                bools[j] = false;
+        //        }
+
+        //        #endregion
+
+        //        var prime = 2;
+
+
+        //        for (int num = 1, counter = 1; num < size; num++)
+        //        {
+        //            if (bools[num] && counter++ == sNum - 1)
+        //            {
+        //                prime = (2 * num + 1);
+        //                break;
+        //            }
+        //        }
+
+        //        #endregion
+
+
+        //        sw.Stop();
+
+        //        return (prime, sw.Elapsed);
+        //    });
+        //}
+
+
+
         private Task<(int prime, TimeSpan time)> CalculateE(int sNum)
         {
             return Task.Run(() =>
@@ -142,32 +249,16 @@ namespace PrimeObsession
                 if (size < 12)
                     size = 12;
 
-                //var bools = new BitArray(size);
-                ////var bools = new bool[size];
-
-                //for (var i = 2; i < size; i++)
-                //    bools[i] = true;
 
 
-                //for (var number = 2; number * number < size; ++number)
-                //{
-                //    if (!bools[number])
-                //        continue;
-                //    for (var j = number * number; j < size; j += number)
-                //        bools[j] = false;
-                //}
 
-                //var prime = 0;
 
-                //for (int number = 2, counter = 1; number < size; number++)
-                //{
-                //    if (bools[number] && counter++ == sNum)
-                //    {
-                //        prime = number;
-                //        break;
-                //    }
-                //}
 
+
+
+                #region Optimization
+
+                var numbers = new HashSet<int>();
 
                 var bools = new BitArray(size);
                 //var bools = new bool[size];
@@ -175,49 +266,54 @@ namespace PrimeObsession
                 for (var i = 1; i < size; i++)
                     bools[i] = true;
 
-                /*
 
-                 function sieve2(n){
-                 S = []; 
-                 // заполняем решето единицами
-                 for(k=1; k<=n; k++)
-                  S[k]=1;
+                #region while
 
-                 for(k=1; (2*k+1)*(2*k+1)<=2*n+1; k++){
-                  // если 2k+1 - простое (т. е. k не вычеркнуто)
-                  if(S[k]==1){ 
-                   // то вычеркнем кратные 2k+1
-                   for(l=3*k+1; l<=n; l+=2*k+1){
-                    S[l]=0;
-                    }
-                   }
-                  }
-                 // теперь S[k]=1 тогда и только тогда, когда 2k+1 - простое
-                 return S;
-                 }
+                //var number = 1;
+                //while (true)
+                //{
+                //    var step = 2 * number + 1;
+                //    if (step * step > 2 * size)
+                //        break;
+                //    // если 2k+1 - простое (т. е. k не вычеркнуто)
+                //    if (!bools[number])
+                //    {
+                //        ++number;
+                //        continue;
+                //    }
+                //    // то вычеркнем кратные 2k+1
+                //    for (var j = 3 * number + 1/*number * number*/; j < size; j += step)
+                //        bools[j] = false;
+                //    ++number;
+                //}// теперь S[k]=1 тогда и только тогда, когда 2k+1 - простое
 
+                #endregion
 
-                 */
+                #region for
 
-                for (var number = 1; (2 * number + 1) * (2 * number + 1) < (2 * size + 1); ++number)
+                for (var number = 1; (2 * number + 1) * (2 * number + 1) < 2 * size + 1; ++number)
                 {
                     if (!bools[number])
                         continue;
-                    for (var j = (3 * number + 1)/*number * number*/; j < size; j += (2 * number + 1))
+                    for (var j = 3 * number + 1/*number * number*/; j < size; j += 2 * number + 1)
                         bools[j] = false;
                 }
 
-                var prime = 0;
+                #endregion
 
-                for (int number = 1, counter = 1; number < size; number++)
+                var prime = 2;
+
+
+                for (int num = 1, counter = 1; num < size; num++)
                 {
-                    if (bools[number] && counter++ == sNum)
+                    if (bools[num] && counter++ == sNum - 1)
                     {
-                        prime = (2 * number + 1);
+                        prime = (2 * num + 1);
                         break;
                     }
                 }
 
+                #endregion
 
 
                 sw.Stop();
@@ -225,7 +321,6 @@ namespace PrimeObsession
                 return (prime, sw.Elapsed);
             });
         }
-
 
 
         /// <summary>
