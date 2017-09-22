@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,8 +16,9 @@ namespace PrimeObsession
         #region Поля, Константы, Свойства
 
         private const int DefaultNumber = 1;
-        private string EnterNumber => $@"Введите номер простого числа (дефолт: {DefaultNumber}):";
-        private string EnterThreads => $@"Введите число потоков (дефолт: {Environment.ProcessorCount})";
+        private const int MaxtNumber = 100000000;
+        private string EnterNumber => $@"Номер (1-100.000.000, дефолт: {DefaultNumber}):";
+        private string EnterThreads => $@"Число потоков (дефолт: {Environment.ProcessorCount})";
 
         #endregion
 
@@ -91,6 +91,12 @@ namespace PrimeObsession
                 return;
             }
 
+            if (number > MaxtNumber)
+            {
+                _number.Text = MaxtNumber.ToString();
+                number = MaxtNumber;
+            }
+
             _result.Content = _time.Content = null;
             _fog.Background = Brushes.Transparent;
             _bar.Visibility = Visibility.Visible;
@@ -124,241 +130,7 @@ namespace PrimeObsession
         #endregion
 
 
-        #region Решето Эратосфена
-
-        /// <summary>
-        /// Однопоточный эталон
-        /// </summary>
-        /// <param name="sNum">Номер искомого числа</param>
-        /// <returns></returns>
-        //private Task<(int prime, TimeSpan time)> CalculateE(int sNum)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        var sw = new Stopwatch();
-        //        sw.Start();
-
-        //        var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
-        //        if (size < 12)
-        //            size = 12;
-
-        //        #region woOptimization
-
-        //        //var bools = new BitArray(size);
-        //        ////var bools = new bool[size];
-
-        //        //for (var i = 2; i < size; i++)
-        //        //    bools[i] = true;
-
-        //        //for (var number = 2; number * number < size; ++number)
-        //        //{
-        //        //    if (!bools[number])
-        //        //        continue;
-        //        //    for (var j = number * number; j < size; j += number)
-        //        //        bools[j] = false;
-        //        //}
-
-        //        //var prime = 0;
-
-        //        //for (int number = 2, counter = 1; number < size; number++)
-        //        //{
-        //        //    if (bools[number] && counter++ == sNum)
-        //        //    {
-        //        //        prime = number;
-        //        //        break;
-        //        //    }
-        //        //}
-
-        //        #endregion
-
-
-        //        #region Optimization
-
-        //        var bools = new BitArray(size);
-        //        //var bools = new bool[size];
-
-        //        for (var i = 1; i < size; i++)
-        //            bools[i] = true;
-
-
-        //        #region while
-
-        //        //var number = 1;
-        //        //while (true)
-        //        //{
-        //        //    var step = 2 * number + 1;
-        //        //    if (step * step > 2 * size)
-        //        //        break;
-        //        //    // если 2k+1 - простое (т. е. k не вычеркнуто)
-        //        //    if (!bools[number])
-        //        //    {
-        //        //        ++number;
-        //        //        continue;
-        //        //    }
-        //        //    // то вычеркнем кратные 2k+1
-        //        //    for (var j = 3 * number + 1/*number * number*/; j < size; j += step)
-        //        //        bools[j] = false;
-        //        //    ++number;
-        //        //}// теперь S[k]=1 тогда и только тогда, когда 2k+1 - простое
-
-        //        #endregion
-
-        //        #region for
-
-        //        for (var number = 1; (2 * number + 1) * (2 * number + 1) < 2 * size + 1; ++number)
-        //        {
-        //            if (!bools[number])
-        //                continue;
-        //            for (var j = 3 * number + 1/*number * number*/; j < size; j += 2 * number + 1)
-        //                bools[j] = false;
-        //        }
-
-        //        #endregion
-
-        //        var prime = 2;
-
-
-        //        for (int num = 1, counter = 1; num < size; num++)
-        //        {
-        //            if (bools[num] && counter++ == sNum - 1)
-        //            {
-        //                prime = (2 * num + 1);
-        //                break;
-        //            }
-        //        }
-
-        //        #endregion
-
-
-        //        sw.Stop();
-
-        //        return (prime, sw.Elapsed);
-        //    });
-        //}
-
-
-
-        private Task<(int prime, TimeSpan time)> CalculateE(int sNum)
-        {
-            return Task.Run(() =>
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-
-                var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
-                if (size < 12)
-                    size = 12;
-
-
-
-
-                //http://e-maxx.ru/algo/eratosthenes_sieve
-
-
-
-                #region Optimization
-
-                var numbers = new HashSet<int>();
-
-                var bools = new BitArray(size);
-                //var bools = new bool[size];
-
-                for (var i = 1; i < size; i++)
-                    bools[i] = true;
-
-
-                #region while
-
-                //var number = 1;
-                //while (true)
-                //{
-                //    var step = 2 * number + 1;
-                //    if (step * step > 2 * size)
-                //        break;
-                //    // если 2k+1 - простое (т. е. k не вычеркнуто)
-                //    if (!bools[number])
-                //    {
-                //        ++number;
-                //        continue;
-                //    }
-                //    // то вычеркнем кратные 2k+1
-                //    for (var j = 3 * number + 1/*number * number*/; j < size; j += step)
-                //        bools[j] = false;
-                //    ++number;
-                //}// теперь S[k]=1 тогда и только тогда, когда 2k+1 - простое
-
-                #endregion
-
-                #region for
-
-                for (var number = 1; (2 * number + 1) * (2 * number + 1) < 2 * size + 1; ++number)
-                {
-                    if (!bools[number])
-                        continue;
-                    for (var j = 3 * number + 1/*number * number*/; j < size; j += 2 * number + 1)
-                        bools[j] = false;
-                }
-
-                #endregion
-
-                var prime = 2;
-
-
-                for (int num = 1, counter = 1; num < size; num++)
-                {
-                    if (bools[num] && counter++ == sNum - 1)
-                    {
-                        prime = (2 * num + 1);
-                        break;
-                    }
-                }
-
-                #endregion
-
-
-                sw.Stop();
-
-                return (prime, sw.Elapsed);
-            });
-        }
-
-
-        /// <summary>
-        /// Многопоточное решение
-        /// </summary>
-        /// <param name="sNum">Номер искомого числа</param>
-        /// <param name="threadsCount">Количество потоков</param>
-        /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> CalculateE(int sNum, int threadsCount)
-        {
-            return CalculateE(sNum);
-
-            //return Task.Run(() =>
-            //{
-            //    var sw = new Stopwatch();
-            //    sw.Start();
-
-            //    var array = Enumerable
-            //        .Range(0, threadsCount)
-            //        .AsParallel()
-            //        .SelectMany(x =>
-            //        {
-            //            return new int[1];
-            //        })
-            //        .ToArray();
-
-            //    Array.Sort(array);
-
-            //    sw.Stop();
-
-            //    return (array[0], sw.Elapsed);
-            //});
-        }
-
-        #endregion
-
-
-        #region Перебором делителей
+        #region Расчёт делителей
 
         /// <summary>
         /// Возвращает массив простых чисел-делителей
@@ -406,7 +178,10 @@ namespace PrimeObsession
             return divisorPrimes.ToArray();
         }
 
+        #endregion
 
+
+        #region Перебором делителей
 
         /// <summary>
         /// Однопоточный эталон
@@ -522,5 +297,133 @@ namespace PrimeObsession
 
         #endregion
 
+
+        #region Решето Эратосфена
+
+        /// <summary>
+        /// Однопоточный эталон
+        /// </summary>
+        /// <param name="sNum">Номер искомого числа</param>
+        /// <returns></returns>
+        private Task<(int prime, TimeSpan time)> CalculateE(int sNum)
+        {
+            return Task.Run(() =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var primes = GetDivisorPrimesD(sNum, out var primeNow);
+                if (primeNow != null)
+                {
+                    sw.Stop();
+                    return (primeNow.Value, sw.Elapsed);
+                }
+
+                var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
+                const int blockSize = 100000;
+                var blockCount = size / blockSize;
+                var counter = 0;
+                var primeResult = 0;
+
+                for (var blockNumber = 0; blockNumber <= blockCount; ++blockNumber)
+                {
+                    var sieveBlock = new bool[blockSize];
+                    var start = blockNumber * blockSize;
+
+                    foreach (var prime in primes)
+                    {
+                        var startIndex = (start + prime - 1) / prime;
+                        for (var i = Math.Max(startIndex, 2) * prime - start; i < blockSize; i += prime)
+                            sieveBlock[i] = true;
+                    }
+
+                    if (blockNumber == 0)
+                        sieveBlock[blockNumber] = sieveBlock[blockNumber + 1] = true;
+
+                    for (var i = 0; i < blockSize && start + i <= size; ++i)
+                    {
+                        if (sieveBlock[i] || ++counter != sNum)
+                            continue;
+                        primeResult = i + start;
+                        goto jumpLabel;
+                    }
+                }
+
+                jumpLabel:
+                sw.Stop();
+
+                return (primeResult, sw.Elapsed);
+            });
+        }
+
+
+        /// <summary>
+        /// Многопоточное решение
+        /// </summary>
+        /// <param name="sNum">Номер искомого числа</param>
+        /// <param name="threadsCount">Количество потоков</param>
+        /// <returns></returns>
+        private Task<(int prime, TimeSpan time)> CalculateE(int sNum, int threadsCount)
+        {
+            return Task.Run(() =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var primes = GetDivisorPrimesD(sNum, out var primeNow);
+                if (primeNow != null)
+                {
+                    sw.Stop();
+                    return (primeNow.Value, sw.Elapsed);
+                }
+
+                var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
+                const int blockSize = 100000;
+                var blockCount = size / blockSize;
+                var blockNumber = 0;
+
+                var array = Enumerable
+                    .Range(0, threadsCount)
+                    .AsParallel()
+                    .SelectMany(x =>
+                    {
+                        var localPrimes = new List<int>();
+                        while (blockNumber < blockCount)
+                        {
+                            var bn = Interlocked.Increment(ref blockNumber) - 1;
+                            var sieveBlock = new bool[blockSize];
+                            var start = bn * blockSize;
+
+                            foreach (var prime in primes)
+                            {
+                                var startIndex = (start + prime - 1) / prime;
+                                for (var i = Math.Max(startIndex, 2) * prime - start; i < blockSize; i += prime)
+                                    sieveBlock[i] = true;
+                            }
+
+                            if (blockNumber == 0)
+                                sieveBlock[bn] = sieveBlock[bn + 1] = true;
+
+                            for (var i = 0; i < blockSize && start + i <= size; ++i)
+                            {
+                                if (sieveBlock[i])
+                                    continue;
+                                localPrimes.Add(i + start);
+                            }
+                        }
+
+                        return localPrimes;
+                    })
+                    .ToArray();
+
+                Array.Sort(array);
+
+                sw.Stop();
+
+                return (array[sNum + 1], sw.Elapsed);
+            });
+        }
+
+        #endregion
     }
 }
