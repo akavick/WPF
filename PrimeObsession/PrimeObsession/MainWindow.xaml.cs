@@ -16,9 +16,10 @@ namespace PrimeObsession
         #region Поля, Константы, Свойства
 
         private const int DefaultNumber = 1;
-        private const int MaxtNumber = 100000000;
+        private const int MaxNumber = 100000000;
+        private readonly int _maxThreads = Environment.ProcessorCount;
         private string EnterNumber => $@"Номер (1-100.000.000, дефолт: {DefaultNumber}):";
-        private string EnterThreads => $@"Число потоков (дефолт: {Environment.ProcessorCount})";
+        private string EnterThreads => $@"Число потоков (1-{_maxThreads}, дефолт: {_maxThreads})";
 
         #endregion
 
@@ -91,10 +92,16 @@ namespace PrimeObsession
                 return;
             }
 
-            if (number > MaxtNumber)
+            if (number > MaxNumber)
             {
-                _number.Text = MaxtNumber.ToString();
-                number = MaxtNumber;
+                _number.Text = MaxNumber.ToString();
+                number = MaxNumber;
+            }
+
+            if (threadsCount > _maxThreads)
+            {
+                _threads.Text = _maxThreads.ToString();
+                threadsCount = _maxThreads;
             }
 
             _result.Content = _time.Content = null;
@@ -186,16 +193,16 @@ namespace PrimeObsession
         /// <summary>
         /// Однопоточный эталон
         /// </summary>
-        /// <param name="searchingNumber">Номер искомого числа</param>
+        /// <param name="sNum">Номер искомого числа</param>
         /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> CalculateD(int searchingNumber)
+        private Task<(int prime, TimeSpan time)> CalculateD(int sNum)
         {
             return Task.Run(() =>
             {
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var divisorPrimes = GetDivisorPrimesD(searchingNumber, out var prime);
+                var divisorPrimes = GetDivisorPrimesD(sNum, out var prime);
 
                 if (prime != null)
                 {
@@ -206,7 +213,7 @@ namespace PrimeObsession
                 var number = divisorPrimes.Length;
                 var currentPrime = divisorPrimes.Last();
 
-                while (number < searchingNumber)
+                while (number < sNum)
                 {
                     currentPrime += 2;
                     var i = 0;
@@ -237,17 +244,17 @@ namespace PrimeObsession
         /// <summary>
         /// Многопоточное решение
         /// </summary>
-        /// <param name="searchingNumber">Номер искомого числа</param>
+        /// <param name="sNum">Номер искомого числа</param>
         /// <param name="threadsCount">Количество потоков</param>
         /// <returns></returns>
-        private Task<(int prime, TimeSpan time)> CalculateD(int searchingNumber, int threadsCount)
+        private Task<(int prime, TimeSpan time)> CalculateD(int sNum, int threadsCount)
         {
             return Task.Run(() =>
             {
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var divisorPrimes = GetDivisorPrimesD(searchingNumber, out var prime);
+                var divisorPrimes = GetDivisorPrimesD(sNum, out var prime);
 
                 if (prime != null)
                 {
@@ -255,6 +262,7 @@ namespace PrimeObsession
                     return (prime.Value, sw.Elapsed);
                 }
 
+                var lowerBound = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)) - sNum);
                 var number = divisorPrimes.Length;
                 var potentialPrime = divisorPrimes.Last();
 
@@ -265,7 +273,7 @@ namespace PrimeObsession
                     {
                         var primes = new List<int>();
 
-                        while (number < searchingNumber)
+                        while (number < sNum)
                         {
                             var pp = Interlocked.Add(ref potentialPrime, 2);
                             var i = 0;
@@ -277,7 +285,8 @@ namespace PrimeObsession
                                     break;
                                 if (divisorPrime * divisorPrime < pp)
                                     continue;
-                                primes.Add(pp);
+                                if (pp >= lowerBound)
+                                    primes.Add(pp);
                                 Interlocked.Increment(ref number);
                                 break;
                             }
@@ -288,10 +297,9 @@ namespace PrimeObsession
                     .ToArray();
 
                 Array.Sort(array);
-
                 sw.Stop();
 
-                return (array[searchingNumber - divisorPrimes.Length - 1], sw.Elapsed);
+                return (array[array.Length - (number - sNum) - 1], sw.Elapsed);
             });
         }
 
@@ -377,16 +385,18 @@ namespace PrimeObsession
                     return (primeNow.Value, sw.Elapsed);
                 }
 
-                var size = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
+                var upperBound = (int)(sNum * Math.Log(sNum) + sNum * Math.Log(Math.Log(sNum)));
+                var lowerBound = upperBound - sNum;
                 const int blockSize = 100000;
-                var blockCount = size / blockSize;
+                var blockCount = upperBound / blockSize;
                 var blockNumber = 0;
 
-                var array = Enumerable
+                return Enumerable
                     .Range(0, threadsCount)
                     .AsParallel()
-                    .SelectMany(x =>
+                    .Select(x =>
                     {
+                        var counter = 0;
                         var localPrimes = new List<int>();
                         while (blockNumber < blockCount)
                         {
@@ -397,30 +407,41 @@ namespace PrimeObsession
                             foreach (var prime in primes)
                             {
                                 var startIndex = (start + prime - 1) / prime;
-                                for (var i = Math.Max(startIndex, 2) * prime - start; i < blockSize; i += prime)
+                                var i = (startIndex > 2 ? startIndex : 2) * prime - start;
+                                while (i < blockSize)
+                                {
                                     sieveBlock[i] = true;
+                                    i += prime;
+                                }
                             }
 
                             if (blockNumber == 0)
                                 sieveBlock[bn] = sieveBlock[bn + 1] = true;
 
-                            for (var i = 0; i < blockSize && start + i <= size; ++i)
+                            for (var i = 0; i < blockSize && start + i <= upperBound; ++i)
                             {
                                 if (sieveBlock[i])
                                     continue;
-                                localPrimes.Add(i + start);
+                                ++counter;
+                                if (i + start >= lowerBound)
+                                    localPrimes.Add(i + start);
                             }
                         }
 
-                        return localPrimes;
+                        return (c: counter, p: localPrimes);
                     })
-                    .ToArray();
-
-                Array.Sort(array);
-
-                sw.Stop();
-
-                return (array[sNum + 1], sw.Elapsed);
+                    .Aggregate((c: 0, p: new List<int>()), (aggregator, current) =>
+                    {
+                        aggregator.c += current.c;
+                        aggregator.p.AddRange(current.p);
+                        return aggregator;
+                    }, result =>
+                    {
+                        var primeArr = result.p.ToArray();
+                        Array.Sort(primeArr);
+                        sw.Stop();
+                        return (primeArr[sNum - (result.c - primeArr.Length) + 1], sw.Elapsed);
+                    });
             });
         }
 
