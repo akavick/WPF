@@ -121,7 +121,7 @@ namespace ChessHorseWalk
         {
             ++steps;
 
-            if()
+            if(   )
 
             if (startFrom == _finishCell.Place)
             {
