@@ -4,12 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:ChessHorseWalk"
-    mc:Ignorable="d"
+	mc:Ignorable="d"
     d:DesignHeight="601"
     d:DesignWidth="601"
     BorderBrush="Black"
-    BorderThickness="1">
+    BorderThickness="1"
+	x:Name="_chessField">
 
     <!--<UserControl.Resources>
         <SolidColorBrush
