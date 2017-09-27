@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,29 +18,6 @@ namespace ChessHorseWalk
 {
     public partial class MainWindow
     {
-        private struct IntPoint
-        {
-            public int X;
-            public int Y;
-
-            public static bool operator ==(IntPoint left, IntPoint right) => left.X == right.X && left.Y == right.Y;
-            public static bool operator !=(IntPoint left, IntPoint right) => !(left == right);
-        }
-
-        private struct Cell
-        {
-            public IntPoint Place;
-            public int BestSteps;
-            public Label Label;
-
-            public void Reset()
-            {
-                Place.X = Place.Y = int.MinValue;
-                BestSteps = 0;
-                Label = null;
-            }
-        }
-
         private Cell _startCell;
         private Cell _finishCell;
         private Cell[,] _cells;
@@ -51,18 +29,12 @@ namespace ChessHorseWalk
 
             _butReset.Click += (s, e) =>
             {
-                _startCell.Reset();
-                _finishCell.Reset();
-                _field.Clear();
+                _startCell = _finishCell = null;
+                _field?.Clear();
                 Reset();
             };
 
             _butStart.Click += async (s, e) => await RunProcess();
-
-            _butCancel.Click += (s, e) =>
-            {
-
-            };
 
             Reset();
         }
@@ -71,62 +43,112 @@ namespace ChessHorseWalk
 
         private void Reset()
         {
+            _lblTime.Content = null;
+            _cells = _field.Cells;
             _side = _field.Side;
-            _butReset.IsEnabled = _butCancel.IsEnabled = _butStart.IsEnabled = false;
-            _cells = new Cell[_side, _side];
+            _butReset.IsEnabled = _butStart.IsEnabled = false;
 
-            for (var y = 0; y < _side; y++)
+            foreach (var cell in _cells)
             {
-                for (var x = 0; x < _side; x++)
+                cell.Value = int.MaxValue;
+                cell.Label.MouseUp += (s, e) =>
                 {
-                    _cells[y, x].Place.Y = y;
-                    _cells[y, x].Place.X = x;
-                    _cells[y, x].Label = _field.Cells[y, x];
-
-                    var c = _cells[y, x];
-                    _cells[y, x].Label.MouseUp += (s, e) =>
+                    if (_startCell == null)
                     {
-                        if (_startCell.Label == null)
-                        {
-                            _startCell = c;
-                            _startCell.Label.Content = "S";
-                        }
-                        else if (_finishCell.Label == null)
-                        {
-                            _finishCell = c;
-                            _finishCell.Label.Content = "F";
-                        }
-                    };
-                }
+                        cell.Label.Content = "S";
+                        _startCell = cell;
+                    }
+                    else if (_finishCell == null)
+                    {
+                        cell.Label.Content = "F";
+                        _finishCell = cell;
+                        _butStart.IsEnabled = true;
+                    }
+                };
             }
 
-            _butReset.IsEnabled = _butCancel.IsEnabled = _butStart.IsEnabled = true;
+            _butReset.IsEnabled = true;
         }
 
 
 
 
 
-
+        private int minLen = int.MaxValue;
         private async Task RunProcess()
         {
-            await Dispatcher.InvokeAsync(() => _butReset.IsEnabled = _butStart.IsEnabled = false);
-            RunProcessRecursive(_startCell.Place, 0);
-            await Dispatcher.InvokeAsync(() => _butReset.IsEnabled = _butStart.IsEnabled = true);
+            minLen = int.MaxValue;
+
+            _lblTime.Content = null;
+            _butReset.IsEnabled = _butStart.IsEnabled = false;
+
+            List<Stack<Label>> histories = new List<Stack<Label>>();
+            Stack<Label> history = new Stack<Label>();
+
+            var sw = new Stopwatch();
+            sw.Start();
+            await Task.Run(() => RunProcessRecursive(_startCell, 0));
+            sw.Stop();
+
+            _tbSide.Text = minLen.ToString();
+
+            _lblTime.Content = sw.Elapsed;
+            _butReset.IsEnabled = _butStart.IsEnabled = true;
+
         }
 
 
-
-        private void RunProcessRecursive(IntPoint startFrom, int steps)
+        
+        private void RunProcessRecursive(Cell cell, int steps)
         {
-            ++steps;
+            if (cell.Value <= steps)
+                return;
 
-            if(   )
+            cell.Value = steps;
 
-            if (startFrom == _finishCell.Place)
+            if (cell == _finishCell)
             {
-                
+                if (steps < minLen)
+                    minLen = steps;
+                //todo history
             }
+
+            var y = cell.Place.Y;
+            var x = cell.Place.X;
+
+            if (y - 2 >= 0 && x - 1 >= 0 && y - 2 < _side && x - 1 < _side)
+            {
+                RunProcessRecursive(_cells[y - 2, x - 1], steps + 1);
+            }
+            if (y - 2 >= 0 && x + 1 >= 0 && y - 2 < _side && x + 1 < _side)
+            {
+                RunProcessRecursive(_cells[y - 2, x + 1], steps + 1);
+            }
+            if (y - 1 >= 0 && x + 2 >= 0 && y - 1 < _side && x + 2 < _side)
+            {
+                RunProcessRecursive(_cells[y - 1, x + 2], steps + 1);
+            }
+            if (y + 1 >= 0 && x + 2 >= 0 && y + 1 < _side && x + 2 < _side)
+            {
+                RunProcessRecursive(_cells[y + 1, x + 2], steps + 1);
+            }
+            if (y + 2 >= 0 && x + 1 >= 0 && y + 2 < _side && x + 1 < _side)
+            {
+                RunProcessRecursive(_cells[y + 2, x + 1], steps + 1);
+            }
+            if (y + 2 >= 0 && x - 1 >= 0 && y + 2 < _side && x - 1 < _side)
+            {
+                RunProcessRecursive(_cells[y + 2, x - 1], steps + 1);
+            }
+            if (y + 1 >= 0 && x - 2 >= 0 && y + 1 < _side && x - 2 < _side)
+            {
+                RunProcessRecursive(_cells[y + 1, x - 2], steps + 1);
+            }
+            if (y - 1 >= 0 && x - 2 >= 0 && y - 1 < _side && x - 2 < _side)
+            {
+                RunProcessRecursive(_cells[y - 1, x - 2], steps + 1);
+            }
+
         }
 
 

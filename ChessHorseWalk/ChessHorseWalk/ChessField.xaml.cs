@@ -6,11 +6,11 @@ namespace ChessHorseWalk
 {
     public partial class ChessField
     {
-        private const int ClassicSideSize = 8;
+        public const int ClassicSideSize = 50;
         private int _side;
-        private Label[,] _cells;
+        private Cell[,] _cells;
         public int Side => _side;
-        public Label[,] Cells => _cells;
+        public Cell[,] Cells => _cells;
 
 
 
@@ -30,17 +30,13 @@ namespace ChessHorseWalk
             _field = new Grid();
             _chessField.Content = _field;
             _side = side;
-            _cells = new Label[_side, _side];
+            _cells = new Cell[_side, _side];
             FillField();
         }
 
 
 
-        public void Clear()
-        {
-            FillNewField(_side);
-        }
-
+        public void Clear() => FillNewField(_side);
 
 
         private void FillField()
@@ -57,16 +53,24 @@ namespace ChessHorseWalk
 
         private void FillCells()
         {
-            for (var i = 0; i < _side; i++)
+            for (var y = 0; y < _side; y++)
             {
-                var isWhite = i % 2 == 0;
-                for (var j = 0; j < _side; j++)
+                var isWhite = y % 2 == 0;
+                for (var x = 0; x < _side; x++)
                 {
-                    var cell = CreateLabel(isWhite);
-                    _cells[i, j] = cell;
-                    cell.SetValue(Grid.ColumnProperty, j);
-                    cell.SetValue(Grid.RowProperty, i);
-                    _field.Children.Add(cell);
+                    var label = CreateLabel(isWhite);
+                    _cells[y, x] = new Cell
+                    {
+                        Place = new IntPoint
+                        {
+                            Y = y,
+                            X = x
+                        },
+                        Label = label
+                    };
+                    label.SetValue(Grid.ColumnProperty, x);
+                    label.SetValue(Grid.RowProperty, y);
+                    _field.Children.Add(label);
                     isWhite = !isWhite;
                 }
             }
@@ -74,24 +78,13 @@ namespace ChessHorseWalk
 
 
 
-        private Label CreateLabel(bool isWhite)
+        private Label CreateLabel(bool isWhite) => new Label
         {
-            var cell = new Label
-            {
-                FontSize = 40,
-                FontWeight = FontWeights.Bold,
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(2),
-                Background = isWhite ? Brushes.White : Brushes.Gray,
-                ClipToBounds = true,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                VerticalContentAlignment = VerticalAlignment.Center,
-                Padding = new Thickness(0),
-                Margin = new Thickness(0)
-            };
-            return cell;
-        }
-
-
+            FontWeight = FontWeights.Bold,
+            Background = isWhite ? Brushes.White : Brushes.Gray,
+            ClipToBounds = true,
+            Padding = new Thickness(0),
+            Margin = new Thickness(0)
+        };
     }
 }
