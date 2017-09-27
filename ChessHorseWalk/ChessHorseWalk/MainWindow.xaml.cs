@@ -22,7 +22,6 @@ namespace ChessHorseWalk
         private Cell _finishCell;
         private Cell[,] _cells;
         private List<Stack<Cell>> _histories;
-        private int _shortestPath;
         private Stack<Cell> _tempHistory;
         private int _side;
         private Random _random = new Random();
@@ -49,7 +48,6 @@ namespace ChessHorseWalk
         {
             _histories = new List<Stack<Cell>>();
             _tempHistory = new Stack<Cell>();
-            _shortestPath = 1;
             _lblTime.Content = null;
             _cells = _field.Cells;
             _side = _field.Side;
@@ -92,7 +90,7 @@ namespace ChessHorseWalk
             //await RunProcessRecursive(_startCell, 0);
             sw.Stop();
 
-            _tbSide.Text = _shortestPath.ToString();
+            _tbSide.Text = (_histories.First().Count - 1).ToString();
 
             var r = _random;
             foreach (var history in _histories)
@@ -100,13 +98,13 @@ namespace ChessHorseWalk
                 var brush = new SolidColorBrush(Color.FromRgb((byte)r.Next(256), (byte)r.Next(256), (byte)r.Next(256)));
                 foreach (var cell in history)
                 {
-                    cell.Label.Background = brush;
+                    //cell.Label.Background = brush;
                     cell.Label.Content = cell.Value;
                 }
             }
 
             _lblTime.Content = sw.Elapsed;
-            _butReset.IsEnabled = _butStart.IsEnabled = true;
+            _butReset.IsEnabled = true;
         }
 
 
@@ -116,34 +114,20 @@ namespace ChessHorseWalk
             if (cell.Value < steps)
                 return;
 
-            if (cell.Value == steps)
-            {
-                if (cell == _finishCell)
-                {
-                    var history = new Stack<Cell>();
-                    foreach (var c in _tempHistory)
-                        history.Push(new Cell(c));
-                    _histories.Add(history);
-                }
-                else
-                    return;
-            }
-
-            cell.Value = steps;
             _tempHistory.Push(cell);
 
             if (cell == _finishCell)
             {
-                if (_histories.Count == 0 || _tempHistory.Count < _shortestPath)
-                {
-                    _shortestPath = _tempHistory.Count;
-                    var history = new Stack<Cell>();
-                    foreach (var c in _tempHistory)
-                        history.Push(new Cell(c));
+                if (cell.Value != steps)
                     _histories.Clear();
-                    _histories.Add(history);
-                }
+
+                var history = new Stack<Cell>();
+                foreach (var c in _tempHistory)
+                    history.Push(new Cell(c));
+                _histories.Add(history);
             }
+
+            cell.Value = steps;
 
             var y = cell.Place.Y;
             var x = cell.Place.X;
