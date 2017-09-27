@@ -174,7 +174,7 @@ namespace ChessHorseWalk
         //cell.MouseUp += OnCellOnMouseUp;
 
 
-
+        //http://impotencija.net/prostatit/tabletki-ot-prostatita/
 
         //private void HandlePosition(int i, int j)
         //{
