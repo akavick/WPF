@@ -70,6 +70,7 @@
     <Compile Include="ChessField.xaml.cs">
       <DependentUpon>ChessField.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MathConverter.cs" />
     <Compile Include="IntPoint.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

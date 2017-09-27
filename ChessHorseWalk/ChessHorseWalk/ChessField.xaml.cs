@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 
 namespace ChessHorseWalk
@@ -58,19 +59,22 @@ namespace ChessHorseWalk
                 var isWhite = y % 2 == 0;
                 for (var x = 0; x < _side; x++)
                 {
-                    var label = CreateLabel(isWhite);
-                    _cells[y, x] = new Cell
+                    var cell = _cells[y, x] = new Cell
                     {
                         Place = new IntPoint
                         {
                             Y = y,
                             X = x
                         },
-                        Label = label
+                        Label = new Label
+                        {
+                            Background = isWhite ? Brushes.White : Brushes.Gray,
+                            Style = FindResource("_cellStyle") as Style
+                        }
                     };
-                    label.SetValue(Grid.ColumnProperty, x);
-                    label.SetValue(Grid.RowProperty, y);
-                    _field.Children.Add(label);
+                    cell.Label.SetValue(Grid.ColumnProperty, x);
+                    cell.Label.SetValue(Grid.RowProperty, y);
+                    _field.Children.Add(cell.Label);
                     isWhite = !isWhite;
                 }
             }
@@ -78,13 +82,7 @@ namespace ChessHorseWalk
 
 
 
-        private Label CreateLabel(bool isWhite) => new Label
-        {
-            FontWeight = FontWeights.Bold,
-            Background = isWhite ? Brushes.White : Brushes.Gray,
-            ClipToBounds = true,
-            Padding = new Thickness(0),
-            Margin = new Thickness(0)
-        };
+
+
     }
 }

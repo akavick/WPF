@@ -4,12 +4,50 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	mc:Ignorable="d"
+    xmlns:chessHorseWalk = "clr-namespace:ChessHorseWalk"
+    mc:Ignorable="d"
     d:DesignHeight="601"
     d:DesignWidth="601"
     BorderBrush="Black"
     BorderThickness="1"
-	x:Name="_chessField">
+    x:Name="_chessField">
+
+    <UserControl.Resources>
+
+        <chessHorseWalk:MathConverter
+            x:Key="_mathConverter" />
+
+        <Style
+            x:Key="_cellStyle"
+            TargetType="{x:Type Label}">
+            <Setter
+                Property="FontSize"
+                Value="{Binding 
+                    RelativeSource={RelativeSource Mode=Self}, 
+                    Path=ActualHeight,
+                    Converter={StaticResource _mathConverter},
+                    ConverterParameter=@VALUE/2}" />
+            <Setter
+                Property="FontWeight"
+                Value="Bold" />
+            <Setter
+                Property="Margin"
+                Value="0" />
+            <Setter
+                Property="Padding"
+                Value="0" />
+            <Setter
+                Property="ClipToBounds"
+                Value="True" />
+            <Setter
+                Property="VerticalContentAlignment"
+                Value="Center" />
+            <Setter
+                Property="HorizontalContentAlignment"
+                Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
 
     <!--<UserControl.Resources>
         <SolidColorBrush
@@ -34,7 +72,7 @@
             </Style.Triggers>
         </Style>
     </UserControl.Resources>-->
-    
+
     <Grid
         x:Name="_field">
     </Grid>

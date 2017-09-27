@@ -21,7 +21,11 @@ namespace ChessHorseWalk
         private Cell _startCell;
         private Cell _finishCell;
         private Cell[,] _cells;
+        private List<Stack<Cell>> _histories;
+        private int _shortestPath;
+        private Stack<Cell> _tempHistory;
         private int _side;
+        private Random _random = new Random();
 
         public MainWindow()
         {
@@ -43,6 +47,9 @@ namespace ChessHorseWalk
 
         private void Reset()
         {
+            _histories = new List<Stack<Cell>>();
+            _tempHistory = new Stack<Cell>();
+            _shortestPath = 1;
             _lblTime.Content = null;
             _cells = _field.Cells;
             _side = _field.Side;
@@ -74,43 +81,68 @@ namespace ChessHorseWalk
 
 
 
-        private int minLen = int.MaxValue;
         private async Task RunProcess()
         {
-            minLen = int.MaxValue;
-
             _lblTime.Content = null;
             _butReset.IsEnabled = _butStart.IsEnabled = false;
-
-            List<Stack<Label>> histories = new List<Stack<Label>>();
-            Stack<Label> history = new Stack<Label>();
 
             var sw = new Stopwatch();
             sw.Start();
             await Task.Run(() => RunProcessRecursive(_startCell, 0));
+            //await RunProcessRecursive(_startCell, 0);
             sw.Stop();
 
-            _tbSide.Text = minLen.ToString();
+            _tbSide.Text = _shortestPath.ToString();
+
+            var r = _random;
+            foreach (var history in _histories)
+            {
+                var brush = new SolidColorBrush(Color.FromRgb((byte)r.Next(256), (byte)r.Next(256), (byte)r.Next(256)));
+                foreach (var cell in history)
+                {
+                    cell.Label.Background = brush;
+                    cell.Label.Content = cell.Value;
+                }
+            }
 
             _lblTime.Content = sw.Elapsed;
             _butReset.IsEnabled = _butStart.IsEnabled = true;
-
         }
 
 
-        
+
         private void RunProcessRecursive(Cell cell, int steps)
         {
-            if (cell.Value <= steps)
+            if (cell.Value < steps)
                 return;
 
+            if (cell.Value == steps)
+            {
+                if (cell == _finishCell)
+                {
+                    var history = new Stack<Cell>();
+                    foreach (var c in _tempHistory)
+                        history.Push(new Cell(c));
+                    _histories.Add(history);
+                }
+                else
+                    return;
+            }
+
             cell.Value = steps;
+            _tempHistory.Push(cell);
 
             if (cell == _finishCell)
             {
-                if (steps < minLen)
-                    minLen = steps;
-                //todo history
+                if (_histories.Count == 0 || _tempHistory.Count < _shortestPath)
+                {
+                    _shortestPath = _tempHistory.Count;
+                    var history = new Stack<Cell>();
+                    foreach (var c in _tempHistory)
+                        history.Push(new Cell(c));
+                    _histories.Clear();
+                    _histories.Add(history);
+                }
             }
 
             var y = cell.Place.Y;
@@ -149,6 +181,7 @@ namespace ChessHorseWalk
                 RunProcessRecursive(_cells[y - 1, x - 2], steps + 1);
             }
 
+            _tempHistory.Pop();
         }
 
 
@@ -161,54 +194,65 @@ namespace ChessHorseWalk
 
 
 
-        //void OnCellOnMouseUp(object s, MouseButtonEventArgs e)
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //private async Task RunProcessRecursive(Cell cell, int steps)
         //{
-        //    cell.Content = (int?)cell.Content + 1 ?? 1;
-        //    cell.Foreground = Brushes.Red;
-        //    if (_current != null)
-        //        _current.Foreground = Brushes.Black;
-        //    _current = cell;
-        //    //HandlePosition(y, x);
-        //}
+        //    await Task.Delay(1);
 
-        //cell.MouseUp += OnCellOnMouseUp;
+        //    if (cell.Value <= steps)
+        //        return;
 
+        //    cell.Value = steps;
+        //    await Dispatcher.InvokeAsync(() =>
+        //    {
+        //        cell.Label.Content = steps;
+        //    });
 
-        //http://impotencija.net/prostatit/tabletki-ot-prostatita/
+        //    if (cell == _finishCell)
+        //    {
+        //        if (steps < minLen)
+        //            minLen = steps;
+        //        //todo history
+        //    }
 
-        //private void HandlePosition(int i, int j)
-        //{
+        //    var y = cell.Place.Y;
+        //    var x = cell.Place.X;
+
         //    var possiblePositions = new[]
         //    {
-        //        (y:i - 2, x:j - 1),
-        //        (y:i - 2, x:j + 1),
-        //        (y:i - 1, x:j + 2),
-        //        (y:i + 1, x:j + 2),
-        //        (y:i + 2, x:j + 1),
-        //        (y:i + 2, x:j - 1),
-        //        (y:i + 1, x:j - 2),
-        //        (y:i - 1, x:j - 2)
-        //    }
-        //    .Where(pp => pp.x > -1 && pp.x < Side && pp.y > -1 && pp.y < Side)
-        //    .ToArray();
+        //        (y:y - 2, x:x - 1),
+        //        (y:y - 2, x:x + 1),
+        //        (y:y - 1, x:x + 2),
+        //        (y:y + 1, x:x + 2),
+        //        (y:y + 2, x:x + 1),
+        //        (y:y + 2, x:x - 1),
+        //        (y:y + 1, x:x - 2),
+        //        (y:y - 1, x:x - 2)
+        //    };
 
-        //    foreach (var cell in _cells)
+        //    foreach (var p in possiblePositions)
         //    {
-        //        cell.IsEnabled = false;
-        //        cell.BorderBrush = Brushes.Black;
-        //        cell.Opacity = 0.8;
+        //        if (p.x > -1 && p.x < _side && p.y > -1 && p.y < _side)
+        //            await RunProcessRecursive(_cells[p.y, p.x], steps + 1);
         //    }
-
-        //    foreach (var pp in possiblePositions)
-        //    {
-        //        var cell = _cells[pp.y, pp.x];
-        //        cell.IsEnabled = true;
-        //        cell.BorderBrush = Brushes.LimeGreen;
-        //        cell.Opacity = 1.0;
-        //    }
-
-        //    _current.BorderBrush = Brushes.Red;
-        //    _current.Opacity = 1.0;
         //}
+
+
+
+
+
+
     }
 }
