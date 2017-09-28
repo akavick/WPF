@@ -1,64 +1,75 @@
 ﻿<Window
-	x:Class="ChessHorseWalk.MainWindow"
-	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:local="clr-namespace:ChessHorseWalk"
-	mc:Ignorable="d"
-	Title="HorseWalk"
-	Height="650"
-	Width="600">
-	<DockPanel>
-		<Grid
-			DockPanel.Dock="Bottom">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition />
-				<ColumnDefinition />
-				<ColumnDefinition />
-				<ColumnDefinition />
-				<ColumnDefinition />
-				<ColumnDefinition />
-			</Grid.ColumnDefinitions>
-			<Button
-				x:Name="_butReset"
-				Content="Reset"
-				FontSize="10px"/>
-			<Button
-				Grid.Column="1"
-				x:Name="_butFindAllShortest"
-				Content="Find All Shortest"
-				FontSize="10px"/>
-			<Button
-				Grid.Column="2"
-				x:Name="_butFindOneShortest"
-				Content="Find One Shortest"
-				FontSize="10px"/>
-			<Button
-				Grid.Column="3"
-				x:Name="_butFindSinglestepped"
-				Content="Singlestepping"
-				FontSize="10px" />
-			<Label
-				Grid.Column="4"
-				x:Name="_lblTime"
-				Padding="0"
-				Margin="0"
-				FontSize="10px"
-				VerticalContentAlignment="Center"
-				HorizontalContentAlignment="Center" />
-			<TextBox
-				Grid.Column="5"
-				x:Name="_tbSide"
-				Padding="0"
-				Margin="0"
-				VerticalContentAlignment="Center"
-				HorizontalContentAlignment="Center"
-				FontSize="10px"/>
-		</Grid>
-		
-		<local:ChessField
-			x:Name="_field" />
-		
-	</DockPanel>
+    x:Class="ChessHorseWalk.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:ChessHorseWalk"
+    mc:Ignorable="d"
+    Title="HorseWalk"
+    Height="650"
+    Width="600">
+    <DockPanel>
+        <Grid
+            DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition
+                    Width="0.5*" />
+                <ColumnDefinition
+                    Width="0.5*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="_butReset"
+                Content="Reset"
+                FontSize="10px" />
+            <Button
+                Grid.Column="1"
+                x:Name="_butFindAllShortest"
+                Content="Find All Shortest"
+                FontSize="10px" />
+            <Button
+                Grid.Column="2"
+                x:Name="_butFindOneShortest"
+                Content="Find One Shortest"
+                FontSize="10px" />
+            <Button
+                Grid.Column="3"
+                x:Name="_butFindSinglestepped"
+                Content="Singlestepping"
+                FontSize="10px" />
+            <Label
+                Grid.Column="4"
+                x:Name="_lblTime"
+                Padding="0"
+                Margin="0"
+                FontSize="10px"
+                VerticalContentAlignment="Center"
+                HorizontalContentAlignment="Center" />
+            <Label
+                Grid.Column="5"
+                x:Name="_lblResult"
+                Padding="0"
+                Margin="0"
+                FontSize="10px"
+                VerticalContentAlignment="Center"
+                HorizontalContentAlignment="Center" />
+            <TextBox
+                Grid.Column="6"
+                x:Name="_tbSide"
+                Padding="0"
+                Margin="0"
+                VerticalContentAlignment="Center"
+                HorizontalContentAlignment="Center"
+                FontSize="10px" />
+        </Grid>
+
+        <local:ChessField
+            x:Name="_field" />
+
+    </DockPanel>
 </Window>
