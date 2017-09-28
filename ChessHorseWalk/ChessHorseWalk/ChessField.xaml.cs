@@ -7,7 +7,7 @@ namespace ChessHorseWalk
 {
     public partial class ChessField
     {
-        public const int ClassicSideSize = 8;
+        public const int ClassicSideSize = 6;
         private int _side;
         private Cell[,] _cells;
         public int Side => _side;

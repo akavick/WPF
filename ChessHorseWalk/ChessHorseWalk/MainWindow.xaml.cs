@@ -24,7 +24,6 @@ namespace ChessHorseWalk
         private List<Stack<Cell>> _histories;
         private Stack<Cell> _tempHistory;
         private int _side;
-        private Random _random = new Random();
 
         public MainWindow()
         {
@@ -37,7 +36,9 @@ namespace ChessHorseWalk
                 Reset();
             };
 
-            _butStart.Click += async (s, e) => await RunProcess();
+            _butFindAllShortest.Click += async (s, e) => await RunProcess(RunFindAllShortest);
+            _butFindOneShortest.Click += async (s, e) => await RunProcess(RunFindOneShortest);
+            _butFindSinglestepped.Click += async (s, e) => await RunProcess(RunFindSinglestepped);
 
             Reset();
         }
@@ -51,7 +52,7 @@ namespace ChessHorseWalk
             _lblTime.Content = null;
             _cells = _field.Cells;
             _side = _field.Side;
-            _butReset.IsEnabled = _butStart.IsEnabled = false;
+            _butReset.IsEnabled = _butFindAllShortest.IsEnabled = _butFindOneShortest.IsEnabled = _butFindSinglestepped.IsEnabled = false;
 
             foreach (var cell in _cells)
             {
@@ -67,7 +68,7 @@ namespace ChessHorseWalk
                     {
                         cell.Label.Content = "F";
                         _finishCell = cell;
-                        _butStart.IsEnabled = true;
+                        _butFindAllShortest.IsEnabled = _butFindOneShortest.IsEnabled = _butFindSinglestepped.IsEnabled = true;
                     }
                 };
             }
@@ -78,94 +79,79 @@ namespace ChessHorseWalk
 
 
 
-
-        private async Task RunProcess()
+        private async Task RunProcess(Func<Task> task)
         {
             _lblTime.Content = null;
-            _butReset.IsEnabled = _butStart.IsEnabled = false;
-
+            _butReset.IsEnabled = _butFindAllShortest.IsEnabled = _butFindOneShortest.IsEnabled = _butFindSinglestepped.IsEnabled = false;
             var sw = new Stopwatch();
             sw.Start();
-            await Task.Run(() => RunProcessRecursive(_startCell, 0));
-            //await RunProcessRecursive(_startCell, 0);
+            await task();
             sw.Stop();
-
-            _tbSide.Text = (_histories.First().Count - 1).ToString();
-
-            var r = _random;
-            foreach (var history in _histories)
-            {
-                var brush = new SolidColorBrush(Color.FromRgb((byte)r.Next(256), (byte)r.Next(256), (byte)r.Next(256)));
-                foreach (var cell in history)
-                {
-                    //cell.Label.Background = brush;
-                    cell.Label.Content = cell.Value;
-                }
-            }
-
             _lblTime.Content = sw.Elapsed;
             _butReset.IsEnabled = true;
         }
 
 
 
-        private void RunProcessRecursive(Cell cell, int steps)
+
+        private async Task RunFindAllShortest()
         {
-            if (cell.Value < steps)
-                return;
+            void RunFindAllShortestRecursive(Cell cell, int steps)
+            {
+                if (cell.Value < steps)
+                    return;
 
-            _tempHistory.Push(cell);
+                _tempHistory.Push(cell);
 
-            if (cell == _finishCell)
-            {
-                if (cell.Value != steps)
-                    _histories.Clear();
+                if (cell == _finishCell)
+                {
+                    if (cell.Value != steps)
+                        _histories.Clear();
+                    cell.Value = steps;
+                    var history = new Stack<Cell>();
+                    foreach (var c in _tempHistory)
+                        history.Push(new Cell(c));
+                    _histories.Add(history);
+                    _tempHistory.Pop();
+                    return;
+                }
 
-                var history = new Stack<Cell>();
-                foreach (var c in _tempHistory)
-                    history.Push(new Cell(c));
-                _histories.Add(history);
-            }
+                cell.Value = steps;
 
-            cell.Value = steps;
+                var y = cell.Place.Y;
+                var x = cell.Place.X;
 
-            var y = cell.Place.Y;
-            var x = cell.Place.X;
+                if (y - 2 >= 0 && x - 1 >= 0 && y - 2 < _side && x - 1 < _side)
+                    RunFindAllShortestRecursive(_cells[y - 2, x - 1], steps + 1);
+                if (y - 2 >= 0 && x + 1 >= 0 && y - 2 < _side && x + 1 < _side)
+                    RunFindAllShortestRecursive(_cells[y - 2, x + 1], steps + 1);
+                if (y - 1 >= 0 && x + 2 >= 0 && y - 1 < _side && x + 2 < _side)
+                    RunFindAllShortestRecursive(_cells[y - 1, x + 2], steps + 1);
+                if (y + 1 >= 0 && x + 2 >= 0 && y + 1 < _side && x + 2 < _side)
+                    RunFindAllShortestRecursive(_cells[y + 1, x + 2], steps + 1);
+                if (y + 2 >= 0 && x + 1 >= 0 && y + 2 < _side && x + 1 < _side)
+                    RunFindAllShortestRecursive(_cells[y + 2, x + 1], steps + 1);
+                if (y + 2 >= 0 && x - 1 >= 0 && y + 2 < _side && x - 1 < _side)
+                    RunFindAllShortestRecursive(_cells[y + 2, x - 1], steps + 1);
+                if (y + 1 >= 0 && x - 2 >= 0 && y + 1 < _side && x - 2 < _side)
+                    RunFindAllShortestRecursive(_cells[y + 1, x - 2], steps + 1);
+                if (y - 1 >= 0 && x - 2 >= 0 && y - 1 < _side && x - 2 < _side)
+                    RunFindAllShortestRecursive(_cells[y - 1, x - 2], steps + 1);
 
-            if (y - 2 >= 0 && x - 1 >= 0 && y - 2 < _side && x - 1 < _side)
-            {
-                RunProcessRecursive(_cells[y - 2, x - 1], steps + 1);
-            }
-            if (y - 2 >= 0 && x + 1 >= 0 && y - 2 < _side && x + 1 < _side)
-            {
-                RunProcessRecursive(_cells[y - 2, x + 1], steps + 1);
-            }
-            if (y - 1 >= 0 && x + 2 >= 0 && y - 1 < _side && x + 2 < _side)
-            {
-                RunProcessRecursive(_cells[y - 1, x + 2], steps + 1);
-            }
-            if (y + 1 >= 0 && x + 2 >= 0 && y + 1 < _side && x + 2 < _side)
-            {
-                RunProcessRecursive(_cells[y + 1, x + 2], steps + 1);
-            }
-            if (y + 2 >= 0 && x + 1 >= 0 && y + 2 < _side && x + 1 < _side)
-            {
-                RunProcessRecursive(_cells[y + 2, x + 1], steps + 1);
-            }
-            if (y + 2 >= 0 && x - 1 >= 0 && y + 2 < _side && x - 1 < _side)
-            {
-                RunProcessRecursive(_cells[y + 2, x - 1], steps + 1);
-            }
-            if (y + 1 >= 0 && x - 2 >= 0 && y + 1 < _side && x - 2 < _side)
-            {
-                RunProcessRecursive(_cells[y + 1, x - 2], steps + 1);
-            }
-            if (y - 1 >= 0 && x - 2 >= 0 && y - 1 < _side && x - 2 < _side)
-            {
-                RunProcessRecursive(_cells[y - 1, x - 2], steps + 1);
+                _tempHistory.Pop();
             }
 
-            _tempHistory.Pop();
+            await Task.Run(() => RunFindAllShortestRecursive(_startCell, 0));
+
+            _tbSide.Text = (_histories.First().Count - 1).ToString();
+
+            foreach (var history in _histories)
+            {
+                foreach (var cell in history)
+                {
+                    cell.Label.Content = cell.Value;
+                }
+            }
         }
 
 
@@ -174,10 +160,137 @@ namespace ChessHorseWalk
 
 
 
+        private async Task RunFindOneShortest()
+        {
+            void RunFindOneShortestRecursive(Cell cell, int steps)
+            {
+                if (cell.Value <= steps)
+                    return;
+
+                _tempHistory.Push(cell);
+
+                if (cell == _finishCell)
+                {
+                    _histories.Clear();
+                    cell.Value = steps;
+                    var history = new Stack<Cell>();
+                    foreach (var c in _tempHistory)
+                        history.Push(new Cell(c));
+                    _histories.Add(history);
+                    _tempHistory.Pop();
+                    return;
+                }
+
+                cell.Value = steps;
+
+                var y = cell.Place.Y;
+                var x = cell.Place.X;
+
+                if (y - 2 >= 0 && x - 1 >= 0 && y - 2 < _side && x - 1 < _side)
+                    RunFindOneShortestRecursive(_cells[y - 2, x - 1], steps + 1);
+                if (y - 2 >= 0 && x + 1 >= 0 && y - 2 < _side && x + 1 < _side)
+                    RunFindOneShortestRecursive(_cells[y - 2, x + 1], steps + 1);
+                if (y - 1 >= 0 && x + 2 >= 0 && y - 1 < _side && x + 2 < _side)
+                    RunFindOneShortestRecursive(_cells[y - 1, x + 2], steps + 1);
+                if (y + 1 >= 0 && x + 2 >= 0 && y + 1 < _side && x + 2 < _side)
+                    RunFindOneShortestRecursive(_cells[y + 1, x + 2], steps + 1);
+                if (y + 2 >= 0 && x + 1 >= 0 && y + 2 < _side && x + 1 < _side)
+                    RunFindOneShortestRecursive(_cells[y + 2, x + 1], steps + 1);
+                if (y + 2 >= 0 && x - 1 >= 0 && y + 2 < _side && x - 1 < _side)
+                    RunFindOneShortestRecursive(_cells[y + 2, x - 1], steps + 1);
+                if (y + 1 >= 0 && x - 2 >= 0 && y + 1 < _side && x - 2 < _side)
+                    RunFindOneShortestRecursive(_cells[y + 1, x - 2], steps + 1);
+                if (y - 1 >= 0 && x - 2 >= 0 && y - 1 < _side && x - 2 < _side)
+                    RunFindOneShortestRecursive(_cells[y - 1, x - 2], steps + 1);
+
+                _tempHistory.Pop();
+            }
+
+            await Task.Run(() => RunFindOneShortestRecursive(_startCell, 0));
+
+            _tbSide.Text = (_histories.First().Count - 1).ToString();
+
+            foreach (var cell in _histories.First())
+            {
+                cell.Label.Content = cell.Value;
+            }
+        }
 
 
 
 
+
+
+        private async Task RunFindSinglestepped()
+        {
+            var lim = _side * _side - 1;
+            var found = false;
+
+            void RunFindSinglesteppedRecursive(Cell cell, int steps)
+            {
+                if (found || steps > lim || cell.Value != int.MaxValue)
+                    return;
+
+                if (cell == _finishCell)
+                {
+                    if (steps != lim)
+                        return;
+
+                    found = true;
+                    _tempHistory.Push(cell);
+                    cell.Value = steps;
+                    var history = new Stack<Cell>();
+                    foreach (var c in _tempHistory)
+                        history.Push(new Cell(c));
+                    _histories.Add(history);
+                    _tempHistory.Pop();
+                    return;
+                }
+
+                _tempHistory.Push(cell);
+                cell.Value = steps;
+
+                var y = cell.Place.Y;
+                var x = cell.Place.X;
+
+                if (!found && y - 2 >= 0 && x - 1 >= 0 && y - 2 < _side && x - 1 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y - 2, x - 1], steps + 1);
+                if (!found && y - 2 >= 0 && x + 1 >= 0 && y - 2 < _side && x + 1 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y - 2, x + 1], steps + 1);
+                if (!found && y - 1 >= 0 && x + 2 >= 0 && y - 1 < _side && x + 2 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y - 1, x + 2], steps + 1);
+                if (!found && y + 1 >= 0 && x + 2 >= 0 && y + 1 < _side && x + 2 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y + 1, x + 2], steps + 1);
+                if (!found && y + 2 >= 0 && x + 1 >= 0 && y + 2 < _side && x + 1 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y + 2, x + 1], steps + 1);
+                if (!found && y + 2 >= 0 && x - 1 >= 0 && y + 2 < _side && x - 1 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y + 2, x - 1], steps + 1);
+                if (!found && y + 1 >= 0 && x - 2 >= 0 && y + 1 < _side && x - 2 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y + 1, x - 2], steps + 1);
+                if (!found && y - 1 >= 0 && x - 2 >= 0 && y - 1 < _side && x - 2 < _side)
+                    RunFindSinglesteppedRecursive(_cells[y - 1, x - 2], steps + 1);
+
+                if (found)
+                    return;
+
+                _tempHistory.Pop();
+                cell.Value = int.MaxValue;
+            }
+
+            await Task.Run(() => RunFindSinglesteppedRecursive(_startCell, 0));
+
+            if (_histories.Any())
+            {
+                _tbSide.Text = (_histories.First().Count - 1).ToString();
+
+                foreach (var cell in _histories.First())
+                {
+                    cell.Label.Content = cell.Value;
+                }
+            }
+            else
+                _tbSide.Text = @"Path not found";
+        }
 
 
 

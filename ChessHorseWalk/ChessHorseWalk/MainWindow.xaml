@@ -17,30 +17,48 @@
 				<ColumnDefinition />
 				<ColumnDefinition />
 				<ColumnDefinition />
+				<ColumnDefinition />
+				<ColumnDefinition />
 			</Grid.ColumnDefinitions>
 			<Button
 				x:Name="_butReset"
-				Content="Reset" />
+				Content="Reset"
+				FontSize="10px"/>
 			<Button
 				Grid.Column="1"
-				x:Name="_butStart"
-				Content="Start" />
-			<Label
+				x:Name="_butFindAllShortest"
+				Content="Find All Shortest"
+				FontSize="10px"/>
+			<Button
 				Grid.Column="2"
+				x:Name="_butFindOneShortest"
+				Content="Find One Shortest"
+				FontSize="10px"/>
+			<Button
+				Grid.Column="3"
+				x:Name="_butFindSinglestepped"
+				Content="Singlestepping"
+				FontSize="10px" />
+			<Label
+				Grid.Column="4"
 				x:Name="_lblTime"
 				Padding="0"
 				Margin="0"
+				FontSize="10px"
 				VerticalContentAlignment="Center"
 				HorizontalContentAlignment="Center" />
 			<TextBox
-				Grid.Column="3"
+				Grid.Column="5"
 				x:Name="_tbSide"
 				Padding="0"
 				Margin="0"
 				VerticalContentAlignment="Center"
-				HorizontalContentAlignment="Center" />
+				HorizontalContentAlignment="Center"
+				FontSize="10px"/>
 		</Grid>
+		
 		<local:ChessField
 			x:Name="_field" />
+		
 	</DockPanel>
 </Window>

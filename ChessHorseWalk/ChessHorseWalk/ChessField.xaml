@@ -5,6 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:chessHorseWalk = "clr-namespace:ChessHorseWalk"
+    xmlns:math = "http://hexinnovation.com/math"
     mc:Ignorable="d"
     d:DesignHeight="601"
     d:DesignWidth="601"
@@ -14,20 +15,28 @@
 
     <UserControl.Resources>
 
-        <chessHorseWalk:MathConverter
-            x:Key="_mathConverter" />
+	    <math:MathConverter
+		    x:Key="_math" />
 
         <Style
             x:Key="_cellStyle"
             TargetType="{x:Type Label}">
             <Setter
-                Property="FontSize"
-                Value="{Binding 
-                    RelativeSource={RelativeSource Mode=Self}, 
-                    Path=ActualHeight,
-                    Converter={StaticResource _mathConverter},
-                    ConverterParameter=@VALUE/2}" />
-            <Setter
+                Property="FontSize" >
+	            <Setter.Value>
+					<MultiBinding
+						Converter="{StaticResource _math}"
+						ConverterParameter="min(x,y)/2.0">
+						<Binding
+							RelativeSource="{RelativeSource Mode=Self}"
+							Path="ActualHeight"/>
+						<Binding
+							RelativeSource="{RelativeSource Mode=Self}"
+							Path="ActualWidth" />
+					</MultiBinding>
+	            </Setter.Value>
+            </Setter>
+	        <Setter
                 Property="FontWeight"
                 Value="Bold" />
             <Setter
@@ -49,29 +58,7 @@
     </UserControl.Resources>
 
 
-    <!--<UserControl.Resources>
-        <SolidColorBrush
-            x:Key="_disabledForegroundBrush"
-            Color="Red" />
-        <SolidColorBrush
-            x:Key="_disabledBackgroundBrush"
-            Color="White" />
-        <Style
-            TargetType="{x:Type Button}">
-            <Style.Triggers>
-                <Trigger
-                    Property="IsEnabled"
-                    Value="False">
-                    <Setter
-                        Property="Foreground"
-                        Value="{DynamicResource _disabledForegroundBrush}" />
-                    <Setter
-                        Property="Background"
-                        Value="{DynamicResource _disabledBackgroundBrush}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>-->
+
 
     <Grid
         x:Name="_field">
