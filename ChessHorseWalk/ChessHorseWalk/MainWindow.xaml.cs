@@ -35,7 +35,7 @@ namespace ChessHorseWalk
         private void Reset()
         {
             var sideEntered = int.TryParse(_tbSide.Text, out var side);
-            if (sideEntered && side > 0 && side < 101)
+            if (sideEntered && side > 0 && side < 101 && side != _side)
                 _field.FillNewField(side);
             _histories = new List<List<Cell>>();
             _tempHistory = new Stack<Cell>();
